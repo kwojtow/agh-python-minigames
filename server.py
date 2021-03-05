@@ -9,7 +9,10 @@ idCount = 0
 
 def starting_data(gameid):
     if(games[gameid]==1):
+        games_data[gameid]=[960/2 - 70,960/2 - 70]#Middle of board
+    elif(games[gameid]==2):
         games_data[gameid]=[960/2 - 70,960/2 - 70]
+
 
 def threaded_client(conn, player_nmbr, gameid):
     global idCount,games
@@ -21,20 +24,29 @@ def threaded_client(conn, player_nmbr, gameid):
                 break
             if gameid in games:#In case if one player left
 
+                if games[gameid]==0:# second player joined, select random minigame
+                    games[gameid]=randint(1,2)
+                    starting_data(gameid)
+
                 #Diffrent data handling
                 if data=="minigame":#Returns to user id of current minigame
                     conn.sendall(pickle.dumps(games[gameid]))
-                elif games[gameid]==0:# second player joined, select random minigame
-                    games[gameid]=randint(1,1)
-                    starting_data(gameid)
+                elif data=="newgame":#Returns to user id of current minigame
+                    games[gameid]=0
                 #region Pong 
                 elif games[gameid]==1:
+                    if data != "get":
+                        games_data[gameid][player_nmbr]=data
+                #endregion
+                #region Pong2 TEST 
+                elif games[gameid]==2:
                     if data != "get":
                         games_data[gameid][player_nmbr]=data
                 #endregion
 
                 if data!="minigame":
                     conn.sendall(pickle.dumps(games_data[gameid][(player_nmbr+1)%2]))#Send back data from another player
+
             else:
                 break
         except:

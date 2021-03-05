@@ -2,7 +2,7 @@ import pygame, sys, random
 from networking import Network
 import pickle
 
-class Pong:
+class Pong2:
 	def __init__(self, player_nmbr,network):
 		self.player_nmbr=player_nmbr
 		self.screen_width = 1280
@@ -93,6 +93,6 @@ class Pong:
 			pygame.draw.ellipse(self.screen, self.light_grey, self.ball)
 			pygame.draw.aaline(self.screen, self.light_grey, (self.screen_width / 2, 0),(self.screen_width / 2, self.screen_height))
 			pygame.display.flip()
-			if(self.n.send("minigame")!=1):
+			if(self.n.send("minigame")!=2):
 				break
 			self.clock.tick(60)
