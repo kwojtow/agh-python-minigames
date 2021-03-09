@@ -16,6 +16,11 @@ def starting_data(gameid):
 
 def threaded_client(conn, player_nmbr, gameid):
     global idCount,games
+
+    def newgame():
+        games[gameid]=randint(1,2)
+        starting_data(gameid)
+
     conn.send(str.encode(str(player_nmbr)))
     while True:
         try:
@@ -25,14 +30,12 @@ def threaded_client(conn, player_nmbr, gameid):
             if gameid in games:#In case if one player left
 
                 if games[gameid]==0:# second player joined, select random minigame
-                    games[gameid]=randint(1,2)
-                    starting_data(gameid)
-
+                    newgame()
                 #Diffrent data handling
                 if data=="minigame":#Returns to user id of current minigame
                     conn.sendall(pickle.dumps(games[gameid]))
-                elif data=="newgame":#Returns to user id of current minigame
-                    games[gameid]=0
+                elif data=="newgame":
+                    newgame()
                 #region Pong 
                 elif games[gameid]==1:
                     if data != "get":
