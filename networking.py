@@ -21,6 +21,21 @@ class Network:
             print("Connection failed")
             raise
 
+    def current_minigame(self):
+        return self.send("gameinfo")[0]
+
+    def score(self):
+        return self.send("gameinfo")[1:]
+
+    def get_data(self):
+        return self.send("get")
+
+    def game_won_by(self,player_nmbr):
+        if player_nmbr==0:
+            self.send("p0w")
+        elif player_nmbr==1:
+            self.send("p1w")
+
     def send(self, data):
         try:
             self.client.send(pickle.dumps(data))
