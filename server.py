@@ -10,6 +10,8 @@ idCount = 0
 def starting_data(gameid):
     if(games[gameid][0]==1):
         games_data[gameid]=[(960/2 - 50,1280/2,960/2),960/2 - 50]#Middle of board, player0 also takes care of ball logic/location
+    if(games[gameid][0]==2):
+        games_data[gameid]=[[None,None],[None,None]]#(X,Y,Did enemy shot hit)
 
 
 
@@ -17,7 +19,11 @@ def threaded_client(conn, player_nmbr, gameid):
     global idCount,games
 
     def newgame():
-        games[gameid][0]=randint(1,1)
+        newgame_id=randint(1,2)
+        while newgame_id==games[gameid][0]:
+            newgame_id=randint(1,2)
+
+        games[gameid][0]=newgame_id
         starting_data(gameid)
 
     conn.send(str.encode(str(player_nmbr)))
@@ -43,9 +49,22 @@ def threaded_client(conn, player_nmbr, gameid):
                 elif games[gameid][0]==1:
                     if data != "get":
                         games_data[gameid][player_nmbr]=data
+                    if data=="get":
+                        conn.sendall(pickle.dumps(games_data[gameid][(player_nmbr+1)%2]))#Send back data from another player
                 #endregion
-                if data!="gameinfo":
-                    conn.sendall(pickle.dumps(games_data[gameid][(player_nmbr+1)%2]))#Send back data from another player
+                #region Battleships 
+                elif games[gameid][0]==2:
+                    if data[0] == "matrix":
+                        games_data[gameid][player_nmbr][0]=data[1]
+                        if player_nmbr==1:
+                            games_data[gameid][1][1]=(-1,-1)
+                    elif data[0] == "shot":
+                        games_data[gameid][(player_nmbr+1)%2][1]=None
+                        games_data[gameid][player_nmbr][1]=data[1]
+                        conn.sendall(pickle.dumps(games_data[gameid][(player_nmbr+1)%2][0][data[1][0]][data[1][1]]))#Send back data from another player
+                    elif data=="get":
+                        conn.sendall(pickle.dumps(games_data[gameid][(player_nmbr+1)%2][1]))#Send back data from another player
+                #endregion
 
             else:
                 break

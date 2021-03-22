@@ -1,6 +1,7 @@
 from networking import Network
 import pickle
 from pong import Pong
+from battleships import Battleships
 import pygame
 import sys
 
@@ -21,12 +22,16 @@ def main():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            current_minigame=net.send("minigame")
+            current_minigame=net.current_minigame()
             clock.tick(30)
         if current_minigame==1:#PONG
             print("GAME 1")
             game=Pong(player_nmbr,net)
             game.run()
+        elif current_minigame==2:#BATTLESHIPS
+            game=Battleships(player_nmbr,net)
+            game.run()
+
     if net.score()[player_nmbr]==3:
         screen.fill((0,255,0))
     else:

@@ -1,6 +1,5 @@
 import pygame, sys, random
 from networking import Network
-import pickle
 
 class Pong:
 	players_height=100
