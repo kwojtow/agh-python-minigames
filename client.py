@@ -10,6 +10,7 @@ def main():
     player_nmbr = int(net.get_player_nmbr())
     print("You are player number: ", player_nmbr)#For debug
     pygame.init()
+    pygame.font.init()
     screen = pygame.display.set_mode((1280,960))
     pygame.display.set_caption('Minigames PVP')
     clock = pygame.time.Clock()

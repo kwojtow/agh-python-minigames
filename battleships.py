@@ -76,8 +76,6 @@ class Board:
             self.board_cells[x][y][0]=CellType.MISS
 class Display:
     def __init__(self,player_board,enemy_board):
-        pygame.init()
-        pygame.font.init()
         self.divider=35
         self.screen_width=361
         self.cell_size=35
@@ -120,7 +118,7 @@ class Battleships:
         self.player_move=False
         self.player_nmbr=player_nmbr
         self.net=network
-        self.player_score=0
+        self.player_score=20
 
     def board_data_send(self):
         data=[[False for p in range(10)] for _ in range(10)]
@@ -188,7 +186,7 @@ class Battleships:
                 if data!=None:
                     self.player_move=True
                     self.update_text()
-                    if data != (-1,-1): #Solves 1st move problem
+                    if data != (-1,-1) and data !=430: #Solves 1st move problem + Temporary solve
                         self.player_board.shoot_player_cell(data[0],data[1])
 
             self.display.show()

@@ -11,7 +11,7 @@ class Pong:
 	def __init__(self, player_nmbr,network):
 		self.player_nmbr=player_nmbr
 		self.net=network
-		self.screen = pygame.display.get_surface()
+		self.screen = pygame.display.set_mode((1280,960))
 		self.speed=0
 		self.player,self.enemy=self.initialize_players()
 		self.clock = pygame.time.Clock()#<-------------------------???
