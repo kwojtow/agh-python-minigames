@@ -1,7 +1,7 @@
 import socket
 import pickle
 from _thread import start_new_thread
-from server_game import Server_game
+from Server_Modules.server_game import Server_game
 
 games = {}
 idCount = 0

@@ -1,6 +1,6 @@
 from random import randint
-from server_battleships import Server_battleships
-from server_pong import Server_pong
+from Server_Modules.server_battleships import Server_battleships
+from Server_Modules.server_pong import Server_pong
 import pickle
 
 class Server_game:
