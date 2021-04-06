@@ -29,12 +29,14 @@ class Pong:
 
 	def update_enemy(self):
 		data=self.net.get_data()
-		if(self.player_nmbr==0):
-			self.enemy.y=data
-		else:
-			self.enemy.y=data[0]
-			self.ball.x=data[1]
-			self.ball.y=data[2]
+		if(data[0]==1):
+			data=data[1]
+			if(self.player_nmbr==0):
+				self.enemy.y=data
+			else:
+				self.enemy.y=data[0]
+				self.ball.x=data[1]
+				self.ball.y=data[2]
 
 	def update_player(self):
 		self.player.y+=self.speed
@@ -43,9 +45,9 @@ class Pong:
 		elif (self.player.top<=0):
 			self.player.top=1
 		if(self.player_nmbr==0):
-			self.net.send((self.player.y,self.ball.x,self.ball.y))
+			self.net.send((1,(self.player.y,self.ball.x,self.ball.y)))
 		else:
-			self.net.send(self.player.y)
+			self.net.send((1,self.player.y))
 
 	def update_ball(self):
 		self.ball.x += self.ball_speed_x

@@ -118,7 +118,7 @@ class Battleships:
         self.player_move=False
         self.player_nmbr=player_nmbr
         self.net=network
-        self.player_score=20
+        self.player_score=0
 
     def board_data_send(self):
         data=[[False for p in range(10)] for _ in range(10)]
@@ -126,7 +126,7 @@ class Battleships:
             for j in range(10):
                 if self.player_board.board_cells[i][j][0]==CellType.SHIP:
                     data[i][j]=True
-        self.net.send(("matrix",data))
+        self.net.send((2,"matrix",data))
 
     def update_text(self):
         if len(self.player_board.free_ships)>0:
@@ -156,7 +156,7 @@ class Battleships:
                         y-=10*(self.display.cell_size + self.display.margin)+self.display.divider
                         x = x // (self.display.cell_size+self.display.margin)
                         y = y// (self.display.cell_size+self.display.margin)
-                        if x in range(10) and y in range(10):
+                        if x in range(10) and y in range(10) and not self.player_board_ready:
                             self.player_board.clicked_tile(x,y)
                             self.update_text()
                     else:
@@ -166,11 +166,13 @@ class Battleships:
                             if self.player_move and self.enemy_board.board_cells[x][y][0]==CellType.WATER:
                                 self.player_move=False
                                 self.update_text()
-                                data=self.net.send_recv(("shot",(x,y)))
-                                self.player_score+=data
-                                self.enemy_board.shoot_enemy_cell(x,y,data)
-                                if self.player_score==21:
-                                    self.net.game_won_by(self.player_nmbr)
+                                data=self.net.send_recv((2,"shot",(x,y)))
+                                if data[0]:
+                                    data=data[1]
+                                    self.player_score+=data
+                                    self.enemy_board.shoot_enemy_cell(x,y,data)
+                                    if self.player_score==21:
+                                        self.net.game_won_by(self.player_nmbr)
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
@@ -183,7 +185,8 @@ class Battleships:
 
             if (self.player_board_ready and not self.player_move):
                 data=self.net.get_data()
-                if data!=None:
+                if data[0]==2 and data[1]!=None:
+                    data=data[1]
                     self.player_move=True
                     self.update_text()
                     if data != (-1,-1) and data !=430: #Solves 1st move problem + Temporary solve
