@@ -1,9 +1,13 @@
-from Client_Modules.networking import Network
-import pickle
-from Client_Modules.pong import Pong
-from Client_Modules.battleships import Battleships
 import pygame
 import sys
+import pickle
+from Client_Modules.networking import Network
+from Client_Modules.pong import Pong
+from Client_Modules.battleships import Battleships
+from Client_Modules.papersoccer import PaperSoccer
+from Client_Modules.flappybird import FlappyBird
+
+
 
 def main():
     net = Network()
@@ -33,7 +37,12 @@ def main():
         elif current_minigame==2:#BATTLESHIPS
             game=Battleships(player_nmbr,net)
             game.run()
-
+        elif current_minigame==3:#PAPERSOCCER
+            game=PaperSoccer(player_nmbr,net)
+            game.run()
+        elif current_minigame==4:#FLAPPYBIRD
+            game=FlappyBird(player_nmbr,net)
+            game.run()
         score=net.score()
     
     pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))

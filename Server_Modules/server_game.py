@@ -1,6 +1,9 @@
 from random import randint
 from Server_Modules.server_battleships import Server_battleships
 from Server_Modules.server_pong import Server_pong
+from Server_Modules.server_papersoccer import Server_papersoccer
+from Server_Modules.server_flappybird import Server_flappybird
+
 import pickle
 
 class Server_game:
@@ -9,15 +12,19 @@ class Server_game:
         self.game=None
 
     def newgame(self):
-        newgame_id=randint(1,2)
+        newgame_id=randint(1,4)
         while newgame_id==self.gameinfo[0]:
-            newgame_id=randint(1,2)
+            newgame_id=randint(1,4)
 
         self.gameinfo[0]=newgame_id
         if (newgame_id==1):
             self.game=Server_pong()
         elif (newgame_id==2):
             self.game=Server_battleships()
+        elif (newgame_id==3):
+            self.game=Server_papersoccer()
+        elif (newgame_id==4):
+            self.game=Server_flappybird()
 
     def receive(self,data,conn,player_nmbr):
         if self.gameinfo[0]==0:# second player joined, select random minigame
