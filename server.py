@@ -21,6 +21,7 @@ def threaded_client(conn, player_nmbr, gameid):
                 break
         except Exception as e:
             print(e)
+            break
 
     try:#Clean memory
         if games[gameid].gameinfo[0]==-1:#Player left before second joined
