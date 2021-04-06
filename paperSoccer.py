@@ -8,10 +8,10 @@ class PaperSoccer:
     def __init__(self, player_nmbr, network):
         self.player_nmbr = player_nmbr
         self.net = network
-        #pygame.init()
-        #pygame.display.set_caption('PaperSoccer')
-        #self.screen = pygame.display.set_mode((600, 1000))
-        self.screen = pygame.display.get_surface()
+        # pygame.init()
+        pygame.display.set_caption('PaperSoccer')
+        self.screen = pygame.display.set_mode((600, 1000))
+        # self.screen = pygame.display.get_surface()
         self.height = 8
         self.width = 6
         self.moves = [[[False for i in range(10)] for j in range(self.width + 1)] for k in range(self.height + 3)]
@@ -78,6 +78,7 @@ class PaperSoccer:
 
         self.whose_turn = 0
         self.color = pygame.Color(255, 0, 0)
+        self.winner = -1
 
         for i in range(1, self.width):
             pygame.draw.line(self.screen, pygame.Color(222, 222, 222), (100 * i, 0), (100 * i, 100 * (self.height + 2)))
@@ -89,10 +90,12 @@ class PaperSoccer:
         self.right_edge = int(100 * (self.width / 2 + 1))
         self.half_width = int(100 * (self.width / 2 - 1))
 
-        pygame.draw.rect(self.screen, pygame.Color(255, 1, 255), (0, 0, self.half_width, 100))
-        pygame.draw.rect(self.screen, pygame.Color(255, 1, 255), (self.right_edge, 0, self.half_width, 100))
-        pygame.draw.rect(self.screen, pygame.Color(255, 1, 255), (0, 100 * (self.height + 1), self.half_width, 100))
-        pygame.draw.rect(self.screen, pygame.Color(255, 1, 255),
+        self.background_color = pygame.Color(255 * ((self.player_nmbr + 1) % 2), 0, 255 * self.player_nmbr)
+
+        pygame.draw.rect(self.screen, self.background_color, (0, 0, self.half_width, 100))
+        pygame.draw.rect(self.screen, self.background_color, (self.right_edge, 0, self.half_width, 100))
+        pygame.draw.rect(self.screen, self.background_color, (0, 100 * (self.height + 1), self.half_width, 100))
+        pygame.draw.rect(self.screen, self.background_color,
                          (int(100 * (self.width / 2 + 1)), 100 * (self.height + 1), self.half_width, 100))
         pygame.draw.polygon(self.screen, pygame.Color(0, 0, 0),
                             [(self.left_edge, 0), (self.right_edge, 0), (self.right_edge, 100), (100 * self.width, 100),
@@ -123,24 +126,25 @@ class PaperSoccer:
             pygame.draw.line(self.screen, self.color, old_position, ball_pos, 3)
             self.moves[int(old_position[1] / 100)][int(old_position[0] / 100)][dir] = True
             self.moves[int(ball_pos[1] / 100)][int(ball_pos[0] / 100)][10 - dir] = True
-            if not self.can_still_move(ball_pos):
+            if not self.can_still_move(ball_pos) and not self.all_occupied(ball_pos):
                 self.whose_turn = (self.whose_turn + 1) % 2
                 self.color = pygame.Color(255 * ((self.whose_turn + 1) % 2), 0, 255 * self.whose_turn)
+
         return ball_pos
 
-    def can_still_move(self, ball_pos):
+    def all_occupied(self, ball_pos):
         all_occupied = True
-        no_occupied = 0
         for k in self.moves[int(ball_pos[1] / 100)][int(ball_pos[0] / 100)]:
             all_occupied = all_occupied and k
+        return all_occupied
+
+    def can_still_move(self, ball_pos):
+        all_occupied = self.all_occupied(ball_pos)
+        no_occupied = 0
+        for k in self.moves[int(ball_pos[1] / 100)][int(ball_pos[0] / 100)]:
             if k:
                 no_occupied += 1
         return no_occupied > 3 and not all_occupied
-
-    def update_enemy(self):
-        data = self.net.get_data()  # dane odebrane z serwera
-
-        self.net.send(self.ball_position)
 
     def key_value(self, key):
         return {
@@ -160,21 +164,34 @@ class PaperSoccer:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.KEYDOWN:
+                if self.whose_turn == self.player_nmbr and event.type == pygame.KEYDOWN:
                     if event.key in self.keys:
                         self.ball_position = self.move_if_possible(self.key_value(event.key), self.ball_position)
                         self.net.send((self.key_value(event.key), self.ball_position))
 
             data = self.net.get_data()
-            if data != 0 and data[1] != self.ball_position:
-                self.ball_position = self.move_if_possible(data[0], self.ball_position)
+            # print(self.net.get_data())
+            if data != None:
+                # self.whose_turn = data[2]
+                self.color = pygame.Color(255 * ((self.whose_turn + 1) % 2), 0, 255 * self.whose_turn)
+                if data[1] != self.ball_position:
+                    self.ball_position = self.move_if_possible(data[0], self.ball_position)
 
-            if self.ball_position[1] == 0 or self.ball_position[1] == (100 * (self.height + 2)):
-                print("koniec")
-                #time.sleep(3)
-                self.net.game_won_by((self.whose_turn + 1) % 2)
+            if not self.can_still_move(self.ball_position) and self.all_occupied(self.ball_position) and not (self.ball_position[1] == 0 or self.ball_position[1] == (100 * (self.height + 2))):
+                print("Winner: ", (self.whose_turn + 1) % 2)
+                self.winner = (self.whose_turn + 1) % 2
+            elif self.ball_position[1] == 0 or self.ball_position[1] == (100 * (self.height + 2)):
+                print("Winner: ", self.whose_turn)
+                self.winner = self.whose_turn
+
+
 
             pygame.draw.circle(self.screen, self.color, self.ball_position, 5)
 
             pygame.display.update()
+
+            if self.winner > -1:
+                time.sleep(1)
+                self.net.game_won_by(self.winner)
+
             pygame.time.Clock().tick(100)

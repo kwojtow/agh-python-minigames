@@ -1,7 +1,9 @@
+from flappyBird import FlappyBird
 from networking import Network
 import pickle
+
+from paperSoccer import PaperSoccer
 from pong import Pong
-from battleships import Battleships
 import pygame
 import sys
 
@@ -10,7 +12,6 @@ def main():
     player_nmbr = int(net.get_player_nmbr())
     print("You are player number: ", player_nmbr)#For debug
     pygame.init()
-    pygame.font.init()
     screen = pygame.display.set_mode((1280,960))
     pygame.display.set_caption('Minigames PVP')
     clock = pygame.time.Clock()
@@ -23,16 +24,20 @@ def main():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            current_minigame=net.current_minigame()
+            current_minigame=net.send("minigame")
             clock.tick(30)
         if current_minigame==1:#PONG
             print("GAME 1")
             game=Pong(player_nmbr,net)
             game.run()
-        elif current_minigame==2:#BATTLESHIPS
-            game=Battleships(player_nmbr,net)
+        if current_minigame == 2: #PaperSoccer
+            print("GAME 2")
+            game = PaperSoccer(player_nmbr, net)
             game.run()
-
+        if current_minigame == 3: #FlappyBird
+            print("GAME 3")
+            game = FlappyBird(player_nmbr, net)
+            game.run()
     if net.score()[player_nmbr]==3:
         screen.fill((0,255,0))
     else:

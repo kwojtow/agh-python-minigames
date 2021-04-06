@@ -7,24 +7,24 @@ class FlappyBird:
     def __init__(self, player_nmbr, network):
         self.net = network
         self.player_nmbr = player_nmbr
-        pygame.init()
+        # pygame.init()
         pygame.display.set_caption('FlappyBird')
 
         self.screen = pygame.display.set_mode((600, 800))
 
         self.running = True
 
-        self.playerImg = pygame.image.load('/home/krzysztof/Dokumenty/semestr4/testGit/Minigames_pvp-Tchlix/bird.png')
+        self.playerImg = pygame.image.load('bird.png')
         self.playerImg = pygame.transform.scale(self.playerImg, (50, 50))
         self.playerX = 300
         self.playerY = 400
 
-        self.enemyImg = pygame.image.load('/home/krzysztof/Dokumenty/semestr4/testGit/Minigames_pvp-Tchlix/bird.png')
+        self.enemyImg = pygame.image.load('bird.png')
         self.enemyImg = pygame.transform.scale(self.enemyImg, (50, 50))
         self.enemyX = 300
         self.enemyY = 400
 
-        self.brickImg = pygame.image.load('/home/krzysztof/Dokumenty/semestr4/testGit/Minigames_pvp-Tchlix/brickwall.png')
+        self.brickImg = pygame.image.load('brickwall.png')
         self.brickImg = pygame.transform.scale(self.brickImg, (50, 50))
         self.bricksX = [600, 900]
         self.holes = [random.randint(1, 14), random.randint(1, 14)]
@@ -34,6 +34,7 @@ class FlappyBird:
 
     def player(self, x, y):
         self.screen.blit(self.playerImg, (x, y))
+
     def enemy(self, x, y):
         self.screen.blit(self.enemyImg, (x, y))
 
@@ -42,6 +43,7 @@ class FlappyBird:
             if self.bricksX[i] < -50:
                 self.holes[i] = random.randint(1, 14)
 
+    def draw_bricks(self):
         for k in range(len(self.bricksX)):
             for j in range(16):
                 if j == self.holes[k] or j - 1 == self.holes[k] or j + 1 == self.holes[k]:
@@ -59,10 +61,11 @@ class FlappyBird:
         return result
 
     def run(self):
-        while self.running:
+        while self.net.current_minigame() == 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    pygame.quit()
+                    sys.exit()
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
@@ -70,21 +73,6 @@ class FlappyBird:
                         self.downAcceleration = 0.3
 
             self.screen.fill((255, 255, 255))
-
-            self.playerY += self.downSped
-            for i in range(len(self.bricksX)):
-                self.bricksX[i] -= 1
-                if self.bricksX[i] < -51:
-                    self.bricksX[i] = 600
-            self.downSped += self.downAcceleration
-            self.player(self.playerX, self.playerY)
-            self.enemy(self.enemyX, self.enemyY)
-            self.random_bricks_position()
-            if self.crash():
-                print("!!!!!!!!!!!!! CRASH !!!!!!!!!!!!!!!")
-                self.net.game_won_by((self.player_nmbr + 1) % 2)
-
-            self.net.send((self.playerX, self.playerY, self.holes))
 
             data = self.net.get_data()
 
@@ -95,9 +83,27 @@ class FlappyBird:
                 self.enemyX = data[0]
                 self.enemyY = data[1]
 
-            pygame.display.update()
-            pygame.time.Clock().tick(100)
+                for i in range(len(self.bricksX)):
+                    self.bricksX[i] -= 1
+                    if self.bricksX[i] < -51:
+                        self.bricksX[i] = 600
+                self.random_bricks_position()
+                self.draw_bricks()
 
+            self.enemy(self.enemyX, self.enemyY)
+
+            self.playerY += self.downSped
+            self.downSped += self.downAcceleration
+            self.player(self.playerX, self.playerY)
+
+            self.net.send((self.playerX, self.playerY, self.holes))
+
+            pygame.display.update()
+
+            if self.crash():
+                print("!!!!!!!!!!!!! CRASH !!!!!!!!!!!!!!!")
+                self.net.game_won_by((self.player_nmbr + 1) % 2)
+            pygame.time.Clock().tick(100)
 
 # game = FlappyBird(1,1)
 # game.run()
