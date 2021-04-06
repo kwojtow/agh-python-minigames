@@ -1,5 +1,4 @@
 import pygame, sys, random
-from networking import Network
 
 class Pong:
 	players_height=100

@@ -1,7 +1,7 @@
-from networking import Network
+from Client_Modules.networking import Network
 import pickle
-from pong import Pong
-from battleships import Battleships
+from Client_Modules.pong import Pong
+from Client_Modules.battleships import Battleships
 import pygame
 import sys
 
