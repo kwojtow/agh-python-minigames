@@ -6,6 +6,7 @@ from Client_Modules.pong import Pong
 from Client_Modules.battleships import Battleships
 from Client_Modules.papersoccer import PaperSoccer
 from Client_Modules.flappybird import FlappyBird
+from Client_Modules.snakes import Snakes
 
 
 
@@ -21,7 +22,7 @@ def main():
     screen.fill((100,100,100))
     pygame.display.flip()
     score=net.score()
-    while 3 not in score:#Temporary,in final version should be "while no one won"
+    while 3 not in score:
         current_minigame=net.current_minigame()
         pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))
         while current_minigame==-1:#LOBBY
@@ -43,6 +44,10 @@ def main():
         elif current_minigame==4:#FLAPPYBIRD
             game=FlappyBird(player_nmbr,net)
             game.run()
+        elif current_minigame==5:#SNAKES
+            game=Snakes(player_nmbr,net)
+            game.run()
+
         score=net.score()
     
     pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))
@@ -52,7 +57,7 @@ def main():
         screen.fill((255,0,0))
 
     pygame.display.flip()
-
+    net.close()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

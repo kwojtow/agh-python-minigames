@@ -24,13 +24,15 @@ def threaded_client(conn, player_nmbr, gameid):
             break
 
     try:#Clean memory
-        if games[gameid].gameinfo[0]==-1:#Player left before second joined
-            idCount-=1
-        del games[gameid]
-        print("Closing Game", gameid)
+        if gameid in games:
+            if games[gameid].gameinfo[0]==-1:#Player left before second joined
+                idCount-=1
+            del games[gameid]
+            print("Closing Game", gameid)
     except Exception as e:
         print(e)
-    conn.close()
+    finally:
+        conn.close()
 
 def main():
     global idCount

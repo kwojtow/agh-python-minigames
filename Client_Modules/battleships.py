@@ -197,7 +197,3 @@ class Battleships:
 
             if exit_pressed:
                 pygame.quit()
-
-if __name__ == "__main__":
-    x=Battleships()
-    x.run()

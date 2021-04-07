@@ -21,6 +21,13 @@ class Network:
             print("Connection failed")
             raise
 
+    def close(self):
+        try:
+            self.client.close()
+        except:
+            print("Close failed")
+            raise
+
     def current_minigame(self):
         return self.send_recv("gameinfo")[0]
 
@@ -41,7 +48,8 @@ class Network:
             self.client.send(pickle.dumps(data))
             return pickle.loads(self.client.recv(2048*3))
         except socket.error as e:
-            print(e)
+            print("Enemy left (probably)")
+            #print(e)
 
     def send(self, data):
         try:
