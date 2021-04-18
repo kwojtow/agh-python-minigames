@@ -1,81 +1,39 @@
 import socket
 import pickle
 from _thread import start_new_thread
-from random import randint
+from Server_Modules.server_game import Server_game
 
-games = {}  # games[gameid]=[current_minigame,player0wins,player1wins]
-games_data = {}
+games = {}
 idCount = 0
 
 
-def starting_data(gameid):
-    if games[gameid][0] == 1:
-        games_data[gameid] = [(960 / 2 - 50, 1280 / 2, 960 / 2),
-                              960 / 2 - 50]  # Middle of board, player0 also takes care of ball logic/location
-    if games[gameid][0] == 2:
-        games_data[gameid] = [None, None]
-    if games[gameid][0] == 3:
-        games_data[gameid] = [0, 0]
-
-
 def threaded_client(conn, player_nmbr, gameid):
-    global idCount, games
+    global idCount
 
-    def newgame():
-        games[gameid][0] = randint(1, 3)
-        starting_data(gameid)
-
-    conn.send(str.encode(str(player_nmbr)))
+    conn.send(str(player_nmbr).encode())
     while True:
         try:
             data = pickle.loads(conn.recv(2048))  # New data from player
             if not data:
                 break
             if gameid in games:  # In case if one player left
-
-                if games[gameid][0] == 0:  # second player joined, select random minigame
-                    newgame()
-                # Diffrent data handling
-                if data == "gameinfo":  # Returns to user id of current minigame and scores
-                    conn.sendall(pickle.dumps(games[gameid]))
-                elif data == "p0w":  # Who won, may change in the future
-                    games[gameid][1] += 1
-                    newgame()
-                elif data == "p1w":
-                    games[gameid][2] += 1
-                    newgame()
-                # region Pong
-                elif games[gameid][0] == 1:
-                    if data != "get":
-                        games_data[gameid][player_nmbr] = data
-                elif games[gameid][0] == 2:
-                    if data != "get":
-                        print(data)
-                        games_data[gameid][player_nmbr] = data
-                        games_data[gameid][(player_nmbr + 1) % 2] = data
-                elif games[gameid][0] == 3:
-                    if data != "get":
-                        print(data)
-                        games_data[gameid][player_nmbr] = data
-                # endregion
-                if data != "gameinfo":
-                    conn.sendall(
-                        pickle.dumps(games_data[gameid][(player_nmbr + 1) % 2]))  # Send back data from another player
-
+                games[gameid].receive(data, conn, player_nmbr)
             else:
                 break
-        except:
+        except Exception as e:
+            print(e)
             break
 
     try:  # Clean memory
-        if games[gameid][0] == -1:  # Player left before second joined
-            idCount -= 1
-        del games[gameid]
-        del games_data[gameid]
-        print("Closing Game", gameid)
-    except:
-        pass
-    conn.close()
+        if gameid in games:
+            if games[gameid].gameinfo[0] == -1:  # Player left before second joined
+                idCount -= 1
+            del games[gameid]
+            print("Closing Game", gameid)
+    except Exception as e:
+        print(e)
+    finally:
+        conn.close()
 
 
 def main():
@@ -100,12 +58,11 @@ def main():
         idCount += 1
         gameid = (idCount - 1) // 2
         if idCount % 2 == 1:
-            games[gameid] = [-1, 0, 0]
-            games_data[gameid] = [0, 0]
+            games[gameid] = Server_game()
             print("New game created")
             start_new_thread(threaded_client, (conn, 0, gameid))
         else:
-            games[gameid][0] = 0
+            games[gameid].gameinfo[0] = 0
             print("Second player joined")
             start_new_thread(threaded_client, (conn, 1, gameid))
 
