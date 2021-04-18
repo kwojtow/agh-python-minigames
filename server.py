@@ -12,7 +12,10 @@ def threaded_client(conn, player_nmbr, gameid):
     conn.send(str(player_nmbr).encode())
     while True:
         try:
-            data = pickle.loads(conn.recv(2048))#New data from player
+            data=conn.recv(2048)
+            if not data: 
+                break
+            data = pickle.loads(data)#New data from player
             if not data:
                 break
             if gameid in games:#In case if one player left

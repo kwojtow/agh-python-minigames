@@ -1,4 +1,4 @@
-import pygame
+import pygame,sys
 from enum import Enum
 
 class CellType(Enum):
@@ -143,12 +143,11 @@ class Battleships:
             self.display.text="Your move"
 
     def run(self):
-        exit_pressed=False
         while self.net.current_minigame()==2:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    exit_pressed=True
+                    return False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = pygame.mouse.get_pos()
 
@@ -195,5 +194,4 @@ class Battleships:
             self.display.show()
             pygame.time.Clock().tick(60)
 
-            if exit_pressed:
-                pygame.quit()
+        return True

@@ -62,9 +62,7 @@ class FlappyBird:
         while self.net.current_minigame() == 4:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
+                    return False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         self.downSped = -6
@@ -108,5 +106,6 @@ class FlappyBird:
                 self.net.game_won_by((self.player_nmbr + 1) % 2)
             pygame.time.Clock().tick(100)
 
+        return True
 # game = FlappyBird(1,1)
 # game.run()

@@ -77,12 +77,10 @@ class Pong:
 		pygame.display.flip()
 
 	def run(self):
-
 		while self.net.current_minigame()==1:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
-					pygame.quit()
-					sys.exit()
+					return False
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_UP:
 						self.speed = 0
@@ -100,3 +98,4 @@ class Pong:
 			if(self.player_nmbr==0):
 				self.update_ball()
 			self.clock.tick(60)
+		return True

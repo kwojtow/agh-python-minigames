@@ -1,6 +1,6 @@
 import socket
 import pickle
-
+import sys
 
 class Network:
     def __init__(self):
@@ -46,10 +46,17 @@ class Network:
     def send_recv(self, data):
         try:
             self.client.send(pickle.dumps(data))
-            return pickle.loads(self.client.recv(2048*3))
-        except socket.error as e:
-            print("Enemy left (probably)")
-            #print(e)
+            data=self.client.recv(2048*3)
+            if(data):
+                return pickle.loads(data)
+            #Probably should change in the future
+            print("#"*30)
+            print("SECOND PLAYER LEFT")
+            print("#"*30)
+            sys.exit()
+
+        except Exception:
+            print("Receiving data exception")
 
     def send(self, data):
         try:

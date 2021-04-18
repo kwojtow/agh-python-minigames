@@ -160,8 +160,7 @@ class PaperSoccer:
         while self.net.current_minigame() == 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    return False
                 if self.whose_turn == self.player_nmbr and event.type == pygame.KEYDOWN:
                     if event.key in self.keys:
                         self.ball_position = self.move_if_possible(self.key_value(event.key), self.ball_position)
@@ -197,3 +196,4 @@ class PaperSoccer:
                 self.net.game_won_by(self.winner)
 
             pygame.time.Clock().tick(100)
+        return True
