@@ -5,7 +5,7 @@ import pickle
 class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
+        self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------gethostbyname('87.116.245.187')
         self.port = 1234
         self.addr = (self.server, self.port)
         self.player_nmbr = self.connect()
@@ -35,7 +35,6 @@ class Network:
         return self.send_recv("gameinfo")[1:]
 
     def get_data(self):
-        print("gettt", self.player_nmbr)
         return self.send_recv("get")
 
     def game_won_by(self,player_nmbr):
@@ -46,10 +45,7 @@ class Network:
 
     def send_recv(self, data):
         try:
-            print("send_recv", self.player_nmbr)
             self.client.send(pickle.dumps(data))
-            print("send_recv2", self.player_nmbr)
-            print(data)
             return pickle.loads(self.client.recv(2048*3))
         except socket.error as e:
             print("Enemy left (probably)")
