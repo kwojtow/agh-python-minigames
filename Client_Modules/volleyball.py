@@ -234,8 +234,10 @@ class Volleyball:
                 if self.playersX[self.player_nmbr] >= self.width - 2 * self.playersRadius[self.player_nmbr]:
                     self.playersX[self.player_nmbr] = self.width - 2 * self.playersRadius[self.player_nmbr]
             else:
-                if (self.playersX[self.player_nmbr] + 2 * self.playersRadius[self.player_nmbr] >= self.width / 2 - 10 and self.playersXSpeed[
-                    self.player_nmbr] > 0) or (self.playersX[self.player_nmbr]  <= 0 and self.playersXSpeed[self.player_nmbr] < 0):
+                if (self.playersX[self.player_nmbr] + 2 * self.playersRadius[
+                    self.player_nmbr] >= self.width / 2 - 10 and self.playersXSpeed[
+                        self.player_nmbr] > 0) or (
+                        self.playersX[self.player_nmbr] <= 0 and self.playersXSpeed[self.player_nmbr] < 0):
                     self.playersXSpeed[self.player_nmbr] = 0
                 self.playersX[self.player_nmbr] += self.playersXSpeed[self.player_nmbr]
 
@@ -253,10 +255,17 @@ class Volleyball:
 
             # pygame.display.update()
             # if self.player_nmbr == 0:
-            self.net.send((6, (
-                self.playersX[self.player_nmbr], self.playersY[self.player_nmbr], self.playersXSpeed[self.player_nmbr],
-                self.playersYSpeed[self.player_nmbr]),
-                           (self.ballX, self.ballY, self.ballXSpeed, self.ballYSpeed)))
+
+
+            if self.player_nmbr == 0:
+                self.net.send((6, "both", (
+            self.playersX[self.player_nmbr], self.playersY[self.player_nmbr], self.playersXSpeed[self.player_nmbr],
+            self.playersYSpeed[self.player_nmbr]), (self.ballX, self.ballY)))
+            else:
+                self.net.send((6, "player", (
+                    self.playersX[self.player_nmbr], self.playersY[self.player_nmbr],
+                    self.playersXSpeed[self.player_nmbr],
+                    self.playersYSpeed[self.player_nmbr])))
             # else:
             #     self.net.send((6, (self.playersX[(self.player_nmbr + 1) % 2], self.playersY[(self.player_nmbr + 1) % 2], self.playersXSpeed[(self.player_nmbr + 1) % 2], self.playersYSpeed[(self.player_nmbr + 1) % 2]),
             #                    (self.playersX[self.player_nmbr], self.playersY[self.player_nmbr], self.playersXSpeed[self.player_nmbr], self.playersYSpeed[self.player_nmbr]),
@@ -268,15 +277,16 @@ class Volleyball:
             else:
                 data = data[1]
 
+            print(data)
+
             self.playersX[(self.player_nmbr + 1) % 2] = data[0][0]
             self.playersY[(self.player_nmbr + 1) % 2] = data[0][1]
             self.playersXSpeed[(self.player_nmbr + 1) % 2] = data[0][2]
             self.playersYSpeed[(self.player_nmbr + 1) % 2] = data[0][3]
 
-            self.ballX = data[1][0]
-            self.ballY = data[1][1]
-            self.ballXSpeed = data[1][2]
-            self.ballYSpeed = data[1][3]
+            if self.player_nmbr == 1:
+                self.ballX = data[1][0]
+                self.ballY = data[1][1]
 
             self.player(self.playersX[self.player_nmbr], self.playersY[self.player_nmbr])
             self.enemy(self.playersX[(self.player_nmbr + 1) % 2], self.playersY[(self.player_nmbr + 1) % 2])
