@@ -146,7 +146,7 @@ class Volleyball:
 
             self.ballYSpeed = - 0.8 * self.ballYSpeed + self.playersYSpeed[self.player_nmbr]
             self.ballXSpeed = - 0.8 * self.ballXSpeed + self.playersXSpeed[self.player_nmbr]
-            print("kolizja")
+            # print("kolizja")
 
         offset_enemy = (int(self.ballX - self.playersX[(self.player_nmbr + 1) % 2]),
                         int(self.ballY - self.playersY[(self.player_nmbr + 1) % 2]))
@@ -172,7 +172,7 @@ class Volleyball:
 
             self.ballYSpeed = - 0.8 * self.ballYSpeed + self.playersYSpeed[(self.player_nmbr + 1) % 2]
             self.ballXSpeed = - 0.8 * self.ballXSpeed + self.playersXSpeed[(self.player_nmbr + 1) % 2]
-            print("kolizja")
+            # print("kolizja")
 
         if self.ballY >= self.height - 100 - 2 * self.ballRadius:
             self.ballYSpeed = - 0.8 * self.ballYSpeed
@@ -205,7 +205,7 @@ class Volleyball:
         while self.net.current_minigame() == 6:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    return False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP and self.playersY[self.player_nmbr] >= self.height - 100 - 2 * \
                             self.playersRadius[self.player_nmbr]:
@@ -272,12 +272,14 @@ class Volleyball:
             #                    (self.ballX, self.ballY, self.ballXSpeed, self.ballYSpeed)))
 
             data = self.net.get_data()
-            if data[0] != 6:
+            if data == None:
+                continue
+            elif data[0] != 6:
                 break
             else:
                 data = data[1]
 
-            print(data)
+            # print(data)
 
             self.playersX[(self.player_nmbr + 1) % 2] = data[0][0]
             self.playersY[(self.player_nmbr + 1) % 2] = data[0][1]
@@ -308,14 +310,15 @@ class Volleyball:
                 pygame.display.update()
                 # time.sleep(1)
 
-                if self.enemyPoints == 3:
-                    # pygame.quit()
-                    self.net.game_won_by((self.player_nmbr + 1) % 2)
-                if self.playerPoints == 3:
-                    # pygame.quit()
-                    self.net.game_won_by(self.player_nmbr)
+                if self.player_nmbr == 0:
+                    if self.enemyPoints == 3:
+                        # pygame.quit()
+                        self.net.game_won_by((self.player_nmbr + 1) % 2)
+                    if self.playerPoints == 3:
+                        # pygame.quit()
+                        self.net.game_won_by(self.player_nmbr)
 
-            self.clock.tick(200)
-
+            self.clock.tick(100)
+        return True
 # game = Volleyball(1, 1)
 # game.run()

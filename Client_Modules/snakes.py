@@ -91,8 +91,7 @@ class Snakes:
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
-					pygame.quit()
-					sys.exit()
+					return False
 				if event.type == pygame.KEYDOWN:
 					self.player.change_direction(event.key)
 
@@ -109,4 +108,5 @@ class Snakes:
 			if(tuple(self.player.head) in self.enemy_body):
 				self.net.game_won_by((self.player_nmbr+1)%2)
 			self.draw()
-			pygame.time.Clock().tick(2)
+			pygame.time.Clock().tick(5)
+		return True
