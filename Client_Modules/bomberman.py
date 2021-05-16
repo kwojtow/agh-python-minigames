@@ -101,7 +101,6 @@ class Bomberman:
 	
 	def run (self):
 		while self.net.current_minigame()==6:
-			print("LOOP")
 			self.player.moved=False
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
