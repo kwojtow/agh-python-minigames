@@ -3,6 +3,7 @@ from Server_Modules.server_battleships import Server_battleships
 from Server_Modules.server_pong import Server_pong
 from Server_Modules.server_papersoccer import Server_papersoccer
 from Server_Modules.server_flappybird import Server_flappybird
+from Server_Modules.server_race import Server_race
 from Server_Modules.server_snakes import Server_snakes
 from Server_Modules.server_volleyball import Server_volleyball
 
@@ -14,9 +15,9 @@ class Server_game:
         self.game=None
 
     def newgame(self):
-        newgame_id=randint(1,6)
+        newgame_id=randint(1,7)
         while newgame_id==self.gameinfo[0]:
-            newgame_id=randint(1,6)
+            newgame_id=randint(1,7)
 
         self.gameinfo[0]=newgame_id
         if (newgame_id==1):
@@ -31,6 +32,8 @@ class Server_game:
             self.game=Server_snakes()
         elif (newgame_id==6):
             self.game=Server_volleyball()
+        elif (newgame_id==7):
+            self.game=Server_race()
 
     def receive(self,data,conn,player_nmbr):
         if self.gameinfo[0]==0:# second player joined, select random minigame

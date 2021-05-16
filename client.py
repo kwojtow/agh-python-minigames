@@ -6,6 +6,7 @@ from Client_Modules.pong import Pong
 from Client_Modules.battleships import Battleships
 from Client_Modules.papersoccer import PaperSoccer
 from Client_Modules.flappybird import FlappyBird
+from Client_Modules.race import Race
 from Client_Modules.snakes import Snakes
 from Client_Modules.volleyball import Volleyball
 
@@ -52,6 +53,9 @@ def main():
             run=game.run()
         elif current_minigame==6:#VOLLEYBALL
             game=Volleyball(player_nmbr,net)
+            run=game.run()
+        elif current_minigame==7:#RACE
+            game=Race(player_nmbr,net)
             run=game.run()
 
         score=net.score()
