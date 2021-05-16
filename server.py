@@ -40,6 +40,7 @@ def threaded_client(conn, player_nmbr, gameid):
 def main():
     global idCount
     ### Server settings
+    #print(socket.gethostbyname(socket.gethostname()))
     server = socket.gethostbyname(socket.gethostname())
     port = 1234
 

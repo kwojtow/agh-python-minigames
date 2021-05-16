@@ -7,6 +7,7 @@ from Client_Modules.battleships import Battleships
 from Client_Modules.papersoccer import PaperSoccer
 from Client_Modules.flappybird import FlappyBird
 from Client_Modules.snakes import Snakes
+from Client_Modules.bomberman import Bomberman
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
         current_minigame=net.current_minigame()
         clock.tick(30)
 
-    while run and score[0]<1 and score[1]<1:
+    while run and score[0]<3 and score[1]<3:
         current_minigame=net.current_minigame()
         if current_minigame==1:#PONG
             game=Pong(player_nmbr,net)
@@ -49,7 +50,9 @@ def main():
         elif current_minigame==5:#SNAKES
             game=Snakes(player_nmbr,net)
             run=game.run()
-
+        elif current_minigame==6:#BOMBERMAN
+            game=Bomberman(player_nmbr,net)
+            run=game.run()
         score=net.score()
         pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))
 

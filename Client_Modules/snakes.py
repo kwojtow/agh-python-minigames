@@ -74,15 +74,15 @@ class Snakes:
 
 	def draw(self):
 		self.screen.fill((110,110,110))
-		pygame.draw.rect(self.screen, (255,0,0), [self.player.apple[0], self.player.apple[1], 50, 50])
+		pygame.draw.rect(self.screen, (255,0,0), [self.player.apple[0], self.player.apple[1], block_size, block_size])
 
 		for body_part in self.player.body[:-1]:
-			pygame.draw.rect(self.screen, (0,128,0), [body_part[0], body_part[1], 50, 50])
+			pygame.draw.rect(self.screen, (0,128,0), [body_part[0], body_part[1], block_size, block_size])
 		for body_part in self.enemy_body[:-1]:
-			pygame.draw.rect(self.screen, (0,0,128), [body_part[0], body_part[1], 50, 50])
+			pygame.draw.rect(self.screen, (0,0,128), [body_part[0], body_part[1], block_size, block_size])
 
-		pygame.draw.rect(self.screen, (0,255,0), [self.player.head[0], self.player.head[1], 50, 50])
-		pygame.draw.rect(self.screen, (0,0,255), [self.enemy_head[0], self.enemy_head[1], 50, 50])
+		pygame.draw.rect(self.screen, (0,255,0), [self.player.head[0], self.player.head[1], block_size, block_size])
+		pygame.draw.rect(self.screen, (0,0,255), [self.enemy_head[0], self.enemy_head[1], block_size, block_size])
 
 		pygame.display.flip()
 
