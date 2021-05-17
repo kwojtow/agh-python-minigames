@@ -202,7 +202,7 @@ class Volleyball:
         self.ballX += self.ballXSpeed
 
     def run(self):
-        while self.net.current_minigame() == 6:
+        while self.net.current_minigame() == 7:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False

@@ -203,7 +203,7 @@ class Race:
         up_acceleration = False
         down_acceleration = False
         in_touch = False
-        while self.net.current_minigame() == 7:
+        while self.net.current_minigame() == 8:
             for p in self.background_pos:
                 self.screen.blit(self.background, (0, p))
             textsurface = self.font.render("Score: " + str(int(self.player.score)), False, (255, 0, 0))
