@@ -1,4 +1,5 @@
 import pygame, sys, random
+from networking import Network
 import pickle
 
 
@@ -7,22 +8,23 @@ class FlappyBird:
         self.net = network
         self.player_nmbr = player_nmbr
         # pygame.init()
+        pygame.display.set_caption('FlappyBird')
 
         self.screen = pygame.display.set_mode((600, 800))
 
         self.running = True
 
-        self.playerImg = pygame.image.load('Client_Modules/Flappybird_Assets/bird.png')
+        self.playerImg = pygame.image.load('bird.png')
         self.playerImg = pygame.transform.scale(self.playerImg, (50, 50))
         self.playerX = 300
         self.playerY = 400
 
-        self.enemyImg = pygame.image.load('Client_Modules/Flappybird_Assets/bird.png')
+        self.enemyImg = pygame.image.load('bird.png')
         self.enemyImg = pygame.transform.scale(self.enemyImg, (50, 50))
         self.enemyX = 300
         self.enemyY = 400
 
-        self.brickImg = pygame.image.load('Client_Modules/Flappybird_Assets/brickwall.png')
+        self.brickImg = pygame.image.load('brickwall.png')
         self.brickImg = pygame.transform.scale(self.brickImg, (50, 50))
         self.bricksX = [600, 900]
         self.holes = [random.randint(1, 14), random.randint(1, 14)]
@@ -59,10 +61,12 @@ class FlappyBird:
         return result
 
     def run(self):
-        while self.net.current_minigame() == 4:
+        while self.net.current_minigame() == 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return False
+                    pygame.quit()
+                    sys.exit()
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         self.downSped = -6
@@ -71,11 +75,6 @@ class FlappyBird:
             self.screen.fill((255, 255, 255))
 
             data = self.net.get_data()
-
-            if(data[0]!=4):
-                break
-            else:
-                data=data[1]
 
             if data != 0:
                 if self.player_nmbr == 1:
@@ -97,14 +96,14 @@ class FlappyBird:
             self.downSped += self.downAcceleration
             self.player(self.playerX, self.playerY)
 
-            self.net.send((4,self.playerX, self.playerY, self.holes))
+            self.net.send((self.playerX, self.playerY, self.holes))
 
             pygame.display.update()
 
             if self.crash():
+                print("!!!!!!!!!!!!! CRASH !!!!!!!!!!!!!!!")
                 self.net.game_won_by((self.player_nmbr + 1) % 2)
             pygame.time.Clock().tick(100)
 
-        return True
 # game = FlappyBird(1,1)
 # game.run()

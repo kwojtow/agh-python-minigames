@@ -61,8 +61,5 @@ class Network:
     def send(self, data):
         try:
             self.client.send(pickle.dumps(data))
-        except Exception:
-            print("#"*30)
-            print("SECOND PLAYER LEFT")
-            print("#"*30)
-            sys.exit()
+        except socket.error as e:
+            print(e)
