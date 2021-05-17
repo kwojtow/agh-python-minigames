@@ -18,7 +18,7 @@ class Server_game:
     def newgame(self):
         newgame_id=randint(1,8)
         while newgame_id==self.gameinfo[0]:
-            newgame_id=randint(1,7)
+            newgame_id=randint(1,8)
 
         self.gameinfo[0]=newgame_id
         if (newgame_id==1):
