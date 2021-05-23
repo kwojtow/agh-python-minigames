@@ -16,29 +16,15 @@ class Server_game:
     def __init__(self):
         self.gameinfo=[-1,0,0]
         self.game=None
-
+        self.games = [Server_pong,Server_battleships,Server_papersoccer,Server_flappybird,Server_snakes,Server_bomberman,Server_volleyball,Server_race]
     def newgame(self):
-        newgame_id=randint(1,8)
+        newgame_id=randint(1,len(self.games))
         while newgame_id==self.gameinfo[0]:
-            newgame_id=randint(1,8)
+            newgame_id=randint(1,len(self.games))
 
         self.gameinfo[0]=newgame_id
-        if (newgame_id==1):
-            self.game=Server_pong()
-        elif (newgame_id==2):
-            self.game=Server_battleships()
-        elif (newgame_id==3):
-            self.game=Server_papersoccer()
-        elif (newgame_id==4):
-            self.game=Server_flappybird()
-        elif (newgame_id==5):
-            self.game=Server_snakes()
-        elif (newgame_id==6):
-            self.game=Server_bomberman()
-        elif (newgame_id==7):
-            self.game=Server_volleyball()
-        elif (newgame_id==8):
-            self.game=Server_race()
+        self.game = self.games[newgame_id-1]()
+
     def receive(self,data,conn,player_nmbr):
         if self.gameinfo[0]==0:# second player joined, select random minigame
             self.newgame()
