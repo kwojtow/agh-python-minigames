@@ -3,12 +3,14 @@ from Server_Modules.server_battleships import Server_battleships
 from Server_Modules.server_pong import Server_pong
 from Server_Modules.server_papersoccer import Server_papersoccer
 from Server_Modules.server_flappybird import Server_flappybird
+from Server_Modules.server_race import Server_race
 from Server_Modules.server_snakes import Server_snakes
 from Server_Modules.server_bomberman import Server_bomberman
-from Server_Modules.server_race import Server_race
-from Server_Modules.server_volleyball import Server_volleyball
 
 import pickle
+
+from Server_Modules.server_volleyball import Server_volleyball
+
 
 class Server_game:
     def __init__(self):
@@ -37,7 +39,6 @@ class Server_game:
             self.game=Server_volleyball()
         elif (newgame_id==8):
             self.game=Server_race()
-
     def receive(self,data,conn,player_nmbr):
         if self.gameinfo[0]==0:# second player joined, select random minigame
             self.newgame()

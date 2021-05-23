@@ -184,8 +184,8 @@ class Race:
             self.net.game_won_by(1)
 
     def exchange_data(self):
-        if self.net.current_minigame() == 7:
-            self.net.send((7, (self.player.real_position, self.player.score), self.obstacles_data))
+        if self.net.current_minigame() == 8:
+            self.net.send((8, (self.player.real_position, self.player.score), self.obstacles_data))
             if self.player_nmbr == 0:
                 for i in range(len(self.obstacles)):
                     self.obstacles_data[i] = (self.obstacles[i].real_position, self.obstacles[i].speed)
@@ -203,7 +203,7 @@ class Race:
         up_acceleration = False
         down_acceleration = False
         in_touch = False
-        while self.net.current_minigame() == 7:
+        while self.net.current_minigame() == 8:
             for p in self.background_pos:
                 self.screen.blit(self.background, (0, p))
             textsurface = self.font.render("Score: " + str(int(self.player.score)), False, (255, 0, 0))

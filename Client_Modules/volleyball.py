@@ -202,7 +202,7 @@ class Volleyball:
         self.ballX += self.ballXSpeed
 
     def run(self):
-        while self.net.current_minigame() == 6:
+        while self.net.current_minigame() == 7:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False
@@ -258,11 +258,11 @@ class Volleyball:
 
 
             if self.player_nmbr == 0:
-                self.net.send((6, "both", (
+                self.net.send((7, "both", (
             self.playersX[self.player_nmbr], self.playersY[self.player_nmbr], self.playersXSpeed[self.player_nmbr],
             self.playersYSpeed[self.player_nmbr]), (self.ballX, self.ballY)))
             else:
-                self.net.send((6, "player", (
+                self.net.send((7, "player", (
                     self.playersX[self.player_nmbr], self.playersY[self.player_nmbr],
                     self.playersXSpeed[self.player_nmbr],
                     self.playersYSpeed[self.player_nmbr])))
@@ -274,7 +274,7 @@ class Volleyball:
             data = self.net.get_data()
             if data == None:
                 continue
-            elif data[0] != 6:
+            elif data[0] != 7:
                 break
             else:
                 data = data[1]

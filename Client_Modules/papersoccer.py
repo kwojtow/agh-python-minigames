@@ -191,9 +191,9 @@ class PaperSoccer:
 
             pygame.display.update()
 
-            if self.winner > -1:
-                time.sleep(1)
-                self.net.game_won_by(self.winner)
+            if self.player_nmbr == 0:
+                if self.winner > -1:
+                    self.net.game_won_by(self.winner)
 
             pygame.time.Clock().tick(100)
         return True

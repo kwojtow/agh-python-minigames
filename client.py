@@ -6,10 +6,10 @@ from Client_Modules.pong import Pong
 from Client_Modules.battleships import Battleships
 from Client_Modules.papersoccer import PaperSoccer
 from Client_Modules.flappybird import FlappyBird
+from Client_Modules.race import Race
 from Client_Modules.snakes import Snakes
 from Client_Modules.bomberman import Bomberman
 from Client_Modules.volleyball import Volleyball
-from Client_Modules.race import Race
 
 
 def main():
@@ -61,7 +61,6 @@ def main():
         elif current_minigame==8:#RACE
             game=Race(player_nmbr,net)
             run=game.run()
-
         score=net.score()
         pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))
 

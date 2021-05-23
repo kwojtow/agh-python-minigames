@@ -7,8 +7,8 @@ class Server_race:
 
     def receive(self, data, conn, player_nmbr):
         if data == "get":
-            conn.sendall(pickle.dumps((7, self.game_data[(player_nmbr + 1) % 2], self.game_data[2])))
-        elif data[0] == 7:  # Check if player sends current game data
+            conn.sendall(pickle.dumps((8, self.game_data[(player_nmbr + 1) % 2], self.game_data[2])))
+        elif data[0] == 8:  # Check if player sends current game data
             self.game_data[player_nmbr] = data[1]
             if player_nmbr == 0:
                 self.game_data[2] = data[2]

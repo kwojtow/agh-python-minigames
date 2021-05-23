@@ -14,8 +14,8 @@ class Server_volleyball:
 
     def receive(self, data, conn, player_nmbr):
         if data == "get":
-            conn.sendall(pickle.dumps((6, (self.game_data[(player_nmbr + 1) % 2], self.game_data[2]))))  # Send back data from another player
-        elif data[0] == 6:  # Check if player sends current game data
+            conn.sendall(pickle.dumps((7, (self.game_data[(player_nmbr + 1) % 2], self.game_data[2]))))  # Send back data from another player
+        elif data[0] == 7:  # Check if player sends current game data
             if data[1] == "player":
                 self.game_data[player_nmbr] = data[2]
             if data[1] == "both":
