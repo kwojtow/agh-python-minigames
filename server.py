@@ -12,7 +12,7 @@ def threaded_client(conn, player_nmbr, gameid):
     conn.send(str(player_nmbr).encode())
     while True:
         try:
-            data=conn.recv(2048)
+            data=conn.recv(1024)
             if not data: 
                 break
             data = pickle.loads(data)#New data from player
@@ -42,7 +42,7 @@ def main():
     port = 1234
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+    s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
     try:
         s.bind((server, port))
     except socket.error as e:

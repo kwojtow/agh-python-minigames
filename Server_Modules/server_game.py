@@ -17,9 +17,9 @@ class Server_game:
         self.game=None
         self.games = [Server_pong,Server_battleships,Server_papersoccer,Server_flappybird,Server_snakes,Server_bomberman,Server_volleyball,Server_race]
     def newgame(self):
-        newgame_id=randint(1,len(self.games))
+        newgame_id=8
         while newgame_id==self.gameinfo[0]:
-            newgame_id=randint(1,len(self.games))
+            newgame_id=7
 
         self.gameinfo[0]=newgame_id
         self.game = self.games[newgame_id-1]()

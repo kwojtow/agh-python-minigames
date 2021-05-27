@@ -5,8 +5,9 @@ from retry import retry
 
 class Network:
     def __init__(self):
-        socket.setdefaulttimeout(0.3)
+        socket.setdefaulttimeout(0.1)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
         #self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
         self.server='89.228.177.239'
         self.port = 1234
@@ -19,7 +20,7 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.addr)
-            return self.client.recv(2048).decode()
+            return self.client.recv(1024).decode()
         except:
             print("Connection failed")
             raise
@@ -46,10 +47,10 @@ class Network:
         elif player_nmbr==1:
             self.send("p1w")
 
-    @retry(tries=3)
+    @retry(tries=6)
     def send_recv(self, data):
         self.client.send(pickle.dumps(data))
-        data=self.client.recv(2048)
+        data=self.client.recv(1024)
         return pickle.loads(data)
 
     def send(self, data):
