@@ -34,7 +34,6 @@ class Player:
 			self.body.pop(0)
 		else:
 			self.net.send("ate")
-			print("ATE")
 		if(self.direciton==pygame.K_UP):
 			self.head[1]-=block_size
 			if self.head[1]<0:

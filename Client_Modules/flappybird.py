@@ -102,7 +102,6 @@ class FlappyBird:
             pygame.display.update()
 
             if self.crash():
-                print("!!!!!!!!!!!!! CRASH !!!!!!!!!!!!!!!")
                 self.net.game_won_by((self.player_nmbr + 1) % 2)
             pygame.time.Clock().tick(100)
 

@@ -1,8 +1,8 @@
 import pickle
 class Server_bomberman:
     def __init__(self):
-        self.game_data=[([50,50],[]),#First palyer starting position
-                        ([850,850],[])]#Second player starting position
+        self.game_data=[([50,50],[]),#First palyer starting position,Bombs
+                        ([850,850],[])]#Second player starting position,Bombs
 
     def receive(self,data,conn,player_nmbr):
         if data=="get":

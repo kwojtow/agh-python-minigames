@@ -1,9 +1,11 @@
 import socket
 import pickle
 import sys
+from retry import retry
 
 class Network:
     def __init__(self):
+        socket.setdefaulttimeout(0.3)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
         self.port = 1234
@@ -16,7 +18,7 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.addr)
-            return self.client.recv(1024).decode()
+            return self.client.recv(2048).decode()
         except:
             print("Connection failed")
             raise
@@ -43,26 +45,11 @@ class Network:
         elif player_nmbr==1:
             self.send("p1w")
 
+    @retry(tries=3)
     def send_recv(self, data):
-        try:
-            self.client.send(pickle.dumps(data))
-            data=self.client.recv(2048*3)
-            if(data):
-                return pickle.loads(data)
-            #Probably should change in the future
-            print("#"*30)
-            print("SECOND PLAYER LEFT")
-            print("#"*30)
-            sys.exit()
-
-        except Exception:
-            print("Receiving data exception")
+        self.client.send(pickle.dumps(data))
+        data=self.client.recv(2048)
+        return pickle.loads(data)
 
     def send(self, data):
-        try:
-            self.client.send(pickle.dumps(data))
-        except Exception:
-            print("#"*30)
-            print("SECOND PLAYER LEFT")
-            print("#"*30)
-            sys.exit()
+        self.client.send(pickle.dumps(data))

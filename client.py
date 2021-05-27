@@ -1,6 +1,7 @@
 import pygame
 import sys
 import pickle
+from time import sleep
 from Client_Modules.networking import Network
 from Client_Modules.pong import Pong
 from Client_Modules.battleships import Battleships
@@ -29,10 +30,11 @@ def main():
         font = pygame.font.Font(pygame.font.get_default_font(), 60)
         text = font.render('Waiting for second player',True, pygame.Color('green'))
         screen.blit(text,(260,480))
-    
+ 
         pygame.display.flip()
         score=net.score()
         games = [Pong,Battleships,PaperSoccer,FlappyBird,Snakes,Bomberman,Volleyball,Race]
+        game_names = ["Pong","Battleships","PaperSoccer","FlappyBird","Snakes","Bomberman","Volleyball","Race"]
         run=True
 
         current_minigame=net.current_minigame()
@@ -44,22 +46,46 @@ def main():
             current_minigame=net.current_minigame()
             clock.tick(30)
 
-        while run and score[0]<3 and score[1]<3:#Minigames
+        while run and all(points < 3 for points in score):#Minigames
             current_minigame=net.current_minigame()
+
+            screen = pygame.display.set_mode((1280,960))
+
+            screen.fill((255,255,255))
+            text = font.render('Next game is ' + game_names[current_minigame-1],True, pygame.Color('black'))
+            screen.blit(text,(280,480))
+            pygame.display.flip()
+            sleep(1)
+
             game=games[current_minigame-1](player_nmbr,net)
-            run=game.run()
-            score=net.score()
+            try:
+                run=game.run()
+                score=net.score()
+            except Exception as e:
+                #Second player left
+                print(e)
+                run=False
+                net.close()
+                net = None
             pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))
 
         #Game End
         screen = pygame.display.set_mode((1280,960))
-        if net.score()[player_nmbr]>=3:
-            screen.fill((0,255,0))
-        else:
-            screen.fill((255,0,0))
+        if net != None:
+            if net.score()[player_nmbr]>=3:
+                screen.fill((0,255,0))
+            else:
+                screen.fill((255,0,0))
 
-        text = font.render('Press R to start new game',True, pygame.Color('black'))
-        screen.blit(text,(260,480))
+            text = font.render('Press R to start new game',True, pygame.Color('black'))
+            screen.blit(text,(260,480))
+        else:
+            screen.fill((0,255,0))
+            text = font.render('Enemy left the game',True, pygame.Color('black'))
+            screen.blit(text,(260,480))
+            text = font.render('Press R to start new game',True, pygame.Color('black'))
+            screen.blit(text,(260,540))
+            run =True
 
         pygame.display.flip()
         while run:
@@ -71,7 +97,8 @@ def main():
                         restart = True
                         run = False
             clock.tick(30)
-        net.close()
+        if net:
+            net.close()
         if not restart:
             pygame.quit()
 

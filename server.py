@@ -16,9 +16,7 @@ def threaded_client(conn, player_nmbr, gameid):
             if not data: 
                 break
             data = pickle.loads(data)#New data from player
-            if not data:
-                break
-            if gameid in games:#In case if one player left
+            if gameid in games:#In case if one player left and deleted game
                 games[gameid].receive(data,conn,player_nmbr)
             else:
                 break

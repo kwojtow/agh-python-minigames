@@ -76,7 +76,6 @@ class Bomberman:
 		if(not self.lost and self.player.position in destroyed_cells):
 			self.net.game_won_by((self.player_nmbr+1)%2)
 			self.lost = True
-			print("YOU LOST")
 
 	def draw(self):
 		self.screen.fill((110,110,110))

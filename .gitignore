@@ -5,3 +5,4 @@
 /.vs
 /__pycache__
 /Client_Modules/__pycache__
+/Server_Modules/__pycache__

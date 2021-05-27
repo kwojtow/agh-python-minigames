@@ -1,4 +1,6 @@
 from random import randint
+import pickle
+
 from Server_Modules.server_battleships import Server_battleships
 from Server_Modules.server_pong import Server_pong
 from Server_Modules.server_papersoccer import Server_papersoccer
@@ -6,9 +8,6 @@ from Server_Modules.server_flappybird import Server_flappybird
 from Server_Modules.server_race import Server_race
 from Server_Modules.server_snakes import Server_snakes
 from Server_Modules.server_bomberman import Server_bomberman
-
-import pickle
-
 from Server_Modules.server_volleyball import Server_volleyball
 
 
