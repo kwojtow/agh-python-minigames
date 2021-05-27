@@ -7,7 +7,8 @@ class Network:
     def __init__(self):
         socket.setdefaulttimeout(0.3)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
+        #self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
+        self.server='89.228.177.239'
         self.port = 1234
         self.addr = (self.server, self.port)
         self.player_nmbr = self.connect()

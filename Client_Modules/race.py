@@ -191,7 +191,7 @@ class Race:
                     self.obstacles_data[i] = (self.obstacles[i].real_position, self.obstacles[i].speed)
 
             data = self.net.get_data()
-            while data is None or (type(data) == list and len(data[2]) == 0):
+            while (type(data) == list and len(data[2]) == 0):
                 data = self.net.get_data()
             self.enemy.real_position = data[1][0]
             self.enemy.score = data[1][1]
