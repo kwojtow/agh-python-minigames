@@ -8,8 +8,8 @@ class Network:
         socket.setdefaulttimeout(0.1)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
-        #self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
-        self.server='89.228.177.239'
+        self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
+        # self.server='89.228.177.239'
         self.port = 1234
         self.addr = (self.server, self.port)
         self.player_nmbr = self.connect()

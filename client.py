@@ -63,6 +63,7 @@ def main():
                 score=net.score()
             except Exception as e:
                 #Second player left
+                print(e)
                 run=False
                 net.close()
                 net = None

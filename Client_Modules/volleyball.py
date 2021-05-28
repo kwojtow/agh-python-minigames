@@ -1,324 +1,222 @@
 import time
 
-import pygame as pygame
+import pygame
+import pymunk
+
+
+def convert_coordinates(point):
+    return point[0], 800 - point[1]
+
+
+class Player(pygame.sprite.Sprite):
+    size = (100, 100)
+    speed = [0, 0]
+
+    def __init__(self, initial_position,
+                 image_path):  # initial position is a tuple of center x and y in cartesian system
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load(image_path), self.size)
+        self.rect = self.image.get_rect()
+        self.rect.center = convert_coordinates(initial_position)
+
+        self.body = pymunk.Body()
+        self.body.position = initial_position
+        self.shape = pymunk.Circle(self.body, self.size[0] // 2)
+        self.shape.density = 10
+        self.shape.elasticity = 0.5
+
+
+class Ball(pygame.sprite.Sprite):
+    size = (50, 50)
+
+    def __init__(self, initial_position,
+                 image_path):  # initial position is a tuple of center x and y in cartesian system
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load(image_path), self.size)
+        self.rect = self.image.get_rect()
+        self.rect.center = convert_coordinates(initial_position)
+
+        self.body = pymunk.Body()
+        self.body.position = initial_position
+        self.shape = pymunk.Circle(self.body, self.size[0] // 2)
+        self.shape.density = 1
+        self.shape.elasticity = 1
+
+
+class Stick(pygame.sprite.Sprite):
+    def __init__(self, size, centerx, bottom):
+        super().__init__()
+        self.image = self.image = pygame.transform.scale(
+            pygame.image.load('Client_Modules/Volleyball_Assets/stick.png'), size)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = centerx
+        self.rect.bottom = bottom
+
+        self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.shape = pymunk.Segment(self.body, convert_coordinates((self.rect.centerx, self.rect.bottom)),
+                                    convert_coordinates((self.rect.centerx, self.rect.top + self.rect.width // 2)),
+                                    self.rect.width // 2)
+        self.shape.elasticity = 0.8
+
+
+class Ground(pygame.sprite.Sprite):
+    def __init__(self, size, parent_width, parent_height):
+        super().__init__()
+        self.image = self.image = pygame.transform.scale(pygame.image.load('Client_Modules/Volleyball_Assets/sand.jpg'),
+                                                         size)
+        self.rect = self.image.get_rect()
+        self.rect.left = 0
+        self.rect.bottom = parent_height
+
+        self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.shape = pymunk.Segment(self.body, (0, 0), (parent_width, 0), self.rect.height)
+        self.shape.elasticity = 0.8
+        self.shape.friction = 100000
 
 
 class Volleyball:
     def __init__(self, player_nmbr, network):
-        if player_nmbr == 0:
-            self.images = ['Client_Modules/Volleyball_Assets/pol.png', 'Client_Modules/Volleyball_Assets/rus.png']
-        else:
-            self.images = ['Client_Modules/Volleyball_Assets/rus.png', 'Client_Modules/Volleyball_Assets/pol.png']
-        self.playersX = [0, 0]
-        self.playersY = [0, 0]
-        self.playersRadius = [0, 0]
-        self.playersXSpeed = [0, 0]
-        self.playersYSpeed = [0, 0]
-        self.playersImg = [None, None]
-        self.playersMask = [None, None]
-
+        self.images = ['Client_Modules/Volleyball_Assets/rus.png', 'Client_Modules/Volleyball_Assets/pol.png',
+                       'Client_Modules/Volleyball_Assets/ball.png']
         self.net = network
         self.player_nmbr = player_nmbr
-        # pygame.init()
-        # pygame.display.set_caption("Volleyball")
         self.width = 1200
         self.height = 800
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.running = True
         self.clock = pygame.time.Clock()
 
-        self.acceleration = 0.2
+        self.ground = Ground((self.width, 100), self.width, self.height)
+        self.stick = Stick((20, self.height // 2 + 30), self.width // 2, self.height - 100)
 
-        self.ballRadius = 25
-        self.ballX = self.width / 2 - self.ballRadius
-        self.ballY = self.height / 10 - self.ballRadius
-        self.ballImg = pygame.image.load('Client_Modules/Volleyball_Assets/ball.png')
-        self.ballImg = pygame.transform.scale(self.ballImg, (2 * self.ballRadius, 2 * self.ballRadius))
-        self.ballXSpeed = 0
-        self.ballYSpeed = 0
-        self.ballMask = pygame.mask.from_surface(self.ballImg)
+        self.players = [Player((self.width // 4, self.height // 2), self.images[0]),
+                        Player((3 * self.width // 4, self.height // 2), self.images[1])]
+        self.ball = Ball((self.width // 2, self.height - 100), self.images[2])
+        self.points = [0, 0]
 
-        self.playersRadius[self.player_nmbr] = 50
-        self.playersX[self.player_nmbr] = self.width * 3 / 4 - self.playersRadius[self.player_nmbr]
-        self.playersY[self.player_nmbr] = self.height * 3 / 4 - self.playersRadius[self.player_nmbr]
-        self.playersImg[self.player_nmbr] = pygame.image.load('Client_Modules/Volleyball_Assets/pol.png')
-        self.playersImg[self.player_nmbr] = pygame.transform.scale(self.playersImg[self.player_nmbr], (
-            2 * self.playersRadius[self.player_nmbr], 2 * self.playersRadius[self.player_nmbr]))
-        self.playersXSpeed[self.player_nmbr] = 0
-        self.playersYSpeed[self.player_nmbr] = 0
-        self.playersMask[self.player_nmbr] = pygame.mask.from_surface(self.playersImg[self.player_nmbr])
-        self.playerPoints = 0
+        self.player = self.players[self.player_nmbr]
+        self.enemy = self.players[(self.player_nmbr + 1) % 2]
 
-        self.playersRadius[(self.player_nmbr + 1) % 2] = 50
-        self.playersX[(self.player_nmbr + 1) % 2] = self.width / 4 - self.playersRadius[(self.player_nmbr + 1) % 2]
-        self.playersY[(self.player_nmbr + 1) % 2] = self.height * 3 / 4 - self.playersRadius[(self.player_nmbr + 1) % 2]
-        self.playersImg[(self.player_nmbr + 1) % 2] = pygame.image.load('Client_Modules/Volleyball_Assets/rus.png')
-        self.playersImg[(self.player_nmbr + 1) % 2] = pygame.transform.scale(
-            self.playersImg[(self.player_nmbr + 1) % 2],
-            (2 * self.playersRadius[(self.player_nmbr + 1) % 2], 2 * self.playersRadius[(self.player_nmbr + 1) % 2]))
-        self.playersYSpeed[(self.player_nmbr + 1) % 2] = 0
-        self.playersXSpeed[(self.player_nmbr + 1) % 2] = 0
-        self.playersMask[(self.player_nmbr + 1) % 2] = pygame.mask.from_surface(
-            self.playersImg[(self.player_nmbr + 1) % 2])
-        self.enemyPoints = 0
+        self.items = pygame.sprite.Group()
+        self.items.add(self.ball)
+        self.items.add(self.player)
+        self.items.add(self.enemy)
+        self.items.add(self.ground)
+        self.items.add(self.stick)
 
-        self.ground = pygame.Rect(0, self.height - 100, self.width, 100)
-        self.stick = pygame.Rect(self.width / 2 - 10, self.height * 2 / 5, 20, self.height * 3 / 5 - 100)
+        self.space = pymunk.space.Space()
 
-        self.initialize_payers()
+        if self.player_nmbr == 0:
+            self.space.gravity = 0, -1000
 
-    def initialize_payers(self):
-        self.playersRadius = [50, 50]
-        self.playersX = [self.width * 3 / 4 - self.playersRadius[self.player_nmbr],
-                         self.width / 4 - self.playersRadius[(self.player_nmbr + 1) % 2]]
-        self.playersY = [self.height * 3 / 4 - self.playersRadius[self.player_nmbr],
-                         self.height * 3 / 4 - self.playersRadius[(self.player_nmbr + 1) % 2]]
-        self.playersXSpeed = [0, 0]
-        self.playersYSpeed = [0, 0]
-        self.playersImg = [pygame.transform.scale(pygame.image.load(self.images[self.player_nmbr]), (
-            2 * self.playersRadius[self.player_nmbr], 2 * self.playersRadius[self.player_nmbr])),
-                           pygame.transform.scale(
-                               pygame.image.load(self.images[(self.player_nmbr + 1) % 2]),
-                               (2 * self.playersRadius[(self.player_nmbr + 1) % 2],
-                                2 * self.playersRadius[(self.player_nmbr + 1) % 2]))
-                           ]
-        self.playersMask = [pygame.mask.from_surface(self.playersImg[self.player_nmbr]),
-                            pygame.mask.from_surface(self.playersImg[(self.player_nmbr + 1) % 2])]
+            self.space.add(self.ball.body, self.ball.shape)
+            self.space.add(self.player.body, self.player.shape)
+            self.space.add(self.enemy.body, self.enemy.shape)
+            self.space.add(self.ground.body, self.ground.shape)
+            self.space.add(self.stick.body, self.stick.shape)
 
-    def initialize_ball(self):
-        self.ballRadius = 25
-        self.ballX = self.width / 2 - self.ballRadius
-        self.ballY = self.height / 10 - self.ballRadius
-        self.ballXSpeed = 0
-        self.ballYSpeed = 0
-        self.ballMask = pygame.mask.from_surface(self.ballImg)
+            # bounds
+            self.bl_body = pymunk.Body(body_type=pymunk.Body.STATIC)
+            self.bl_shape = pymunk.Segment(self.bl_body, (0, 0), (0, 10000), 0)
+            self.bl_shape.elasticity = 1
 
-    def initialize_player(self):
-        self.playersRadius[self.player_nmbr] = 50
-        self.playersX[self.player_nmbr] = self.width * 3 / 4 - self.playersRadius[self.player_nmbr]
-        self.playersY[self.player_nmbr] = self.height * 3 / 4 - self.playersRadius[self.player_nmbr]
-        self.playersXSpeed[self.player_nmbr] = 0
-        self.playersYSpeed[self.player_nmbr] = 0
-        self.playersMask[self.player_nmbr] = pygame.mask.from_surface(self.playersImg[self.player_nmbr])
+            self.br_body = pymunk.Body(body_type=pymunk.Body.STATIC)
+            self.br_shape = pymunk.Segment(self.br_body, (self.width, 0), (self.width, 1000), 0)
+            self.br_shape.elasticity = 1
 
-    def initialize_enemy(self):
-        self.playersRadius[(self.player_nmbr + 1) % 2] = 50
-        self.playersX[(self.player_nmbr + 1) % 2] = self.width / 4 - self.playersRadius[(self.player_nmbr + 1) % 2]
-        self.playersY[(self.player_nmbr + 1) % 2] = self.height * 3 / 4 - self.playersRadius[(self.player_nmbr + 1) % 2]
-        self.playersYSpeed[(self.player_nmbr + 1) % 2] = 0
-        self.playersXSpeed[(self.player_nmbr + 1) % 2] = 0
-        self.playersMask[(self.player_nmbr + 1) % 2] = pygame.mask.from_surface(
-            self.playersImg[(self.player_nmbr + 1) % 2])
+            self.space.add(self.bl_body, self.bl_shape)
+            self.space.add(self.br_body, self.br_shape)
 
-    def player(self, x, y):
-        self.screen.blit(self.playersImg[self.player_nmbr], (x, y))
+        self.FPS = 50
 
-    def enemy(self, x, y):
-        self.screen.blit(self.playersImg[(self.player_nmbr + 1) % 2], (x, y))
+    def reload(self):
+        self.players[0].rect.center = (self.width / 4, self.height / 2)
+        self.players[0].speed = [0, 0]
 
-    def ball(self, x, y):
-        self.screen.blit(self.ballImg, (x, y))
+        self.players[1].rect.center = (3 * self.width / 4, self.height / 2)
+        self.players[1].speed = [0, 0]
 
-    def check_collision(self):
-        self.ballYSpeed += self.acceleration
+        self.space.remove(self.ball.body, self.ball.shape)
+        self.items.remove(self.ball)
+        self.ball = Ball((self.width // 2, self.height - 100), self.images[2])
+        self.space.add(self.ball.body, self.ball.shape)
+        self.items.add(self.ball)
 
-        offset = (int(self.ballX - self.playersX[self.player_nmbr]), int(self.ballY - self.playersY[self.player_nmbr]))
+        self.ball.body.position = convert_coordinates(self.ball.rect.center)
+        self.player.body.position = convert_coordinates(self.player.rect.center)
+        self.enemy.body.position = convert_coordinates(self.enemy.rect.center)
 
-        if self.playersMask[self.player_nmbr].overlap(self.ballMask, offset):
-            offset_tmp = (
-                int(self.ballX - self.playersX[self.player_nmbr]), int(self.ballY - self.playersY[self.player_nmbr]))
-            while self.playersMask[self.player_nmbr].overlap(self.ballMask, offset_tmp):
-                if self.ballX + self.ballRadius < self.playersX[self.player_nmbr] + self.playersRadius[
-                    self.player_nmbr]:
-                    self.ballX -= 0.01
-                if self.ballX + self.ballRadius > self.playersX[self.player_nmbr] + self.playersRadius[
-                    self.player_nmbr]:
-                    self.ballX += 0.01
-                if self.ballY + self.ballRadius < self.playersY[self.player_nmbr] + self.playersRadius[
-                    self.player_nmbr]:
-                    self.ballY -= 0.01
-                if self.ballY + self.ballRadius > self.playersY[self.player_nmbr] + self.playersRadius[
-                    self.player_nmbr]:
-                    self.ballY += 0.01
-                offset_tmp = (
-                    int(self.ballX - self.playersX[self.player_nmbr]),
-                    int(self.ballY - self.playersY[self.player_nmbr]))
+    def move_character(self, character, moving_up, moving_left, moving_right):
+        if moving_up:
+            character.body.apply_force_at_local_point((0, 3500000000), (0, 0))
+        if moving_left:
+            character.body.apply_force_at_local_point((-10000000, 0), (0, 0))
+        if moving_right:
+            character.body.apply_force_at_local_point((10000000, 0), (0, 0))
 
-            self.ballYSpeed = - 0.8 * self.ballYSpeed + self.playersYSpeed[self.player_nmbr]
-            self.ballXSpeed = - 0.8 * self.ballXSpeed + self.playersXSpeed[self.player_nmbr]
-            # print("kolizja")
-
-        offset_enemy = (int(self.ballX - self.playersX[(self.player_nmbr + 1) % 2]),
-                        int(self.ballY - self.playersY[(self.player_nmbr + 1) % 2]))
-
-        if self.playersMask[self.player_nmbr].overlap(self.ballMask, offset_enemy):
-            offset_tmp = (int(self.ballX - self.playersX[(self.player_nmbr + 1) % 2]),
-                          int(self.ballY - self.playersY[(self.player_nmbr + 1) % 2]))
-            while self.playersMask[(self.player_nmbr + 1) % 2].overlap(self.ballMask, offset_tmp):
-                if self.ballX + self.ballRadius < self.playersX[(self.player_nmbr + 1) % 2] + self.playersRadius[
-                    (self.player_nmbr + 1) % 2]:
-                    self.ballX -= 0.01
-                if self.ballX + self.ballRadius > self.playersX[(self.player_nmbr + 1) % 2] + self.playersRadius[
-                    (self.player_nmbr + 1) % 2]:
-                    self.ballX += 0.01
-                if self.ballY + self.ballRadius < self.playersY[(self.player_nmbr + 1) % 2] + self.playersRadius[
-                    (self.player_nmbr + 1) % 2]:
-                    self.ballY -= 0.01
-                if self.ballY + self.ballRadius > self.playersY[(self.player_nmbr + 1) % 2] + self.playersRadius[
-                    (self.player_nmbr + 1) % 2]:
-                    self.ballY += 0.01
-                offset_tmp = (int(self.ballX - self.playersX[(self.player_nmbr + 1) % 2]),
-                              int(self.ballY - self.playersY[(self.player_nmbr + 1) % 2]))
-
-            self.ballYSpeed = - 0.8 * self.ballYSpeed + self.playersYSpeed[(self.player_nmbr + 1) % 2]
-            self.ballXSpeed = - 0.8 * self.ballXSpeed + self.playersXSpeed[(self.player_nmbr + 1) % 2]
-            # print("kolizja")
-
-        if self.ballY >= self.height - 100 - 2 * self.ballRadius:
-            self.ballYSpeed = - 0.8 * self.ballYSpeed
-
-        if self.ballX <= 0:
-            self.ballXSpeed = - self.ballXSpeed
-            self.ballX = 0
-        if self.ballX >= self.width - 2 * self.ballRadius:
-            self.ballXSpeed = - self.ballXSpeed
-            self.ballX = self.width - 2 * self.ballRadius
-
-        if (self.width / 2 + 10 >= self.ballX >= self.width / 2 - 10) and \
-                self.ballY + self.ballRadius > self.height * 2 / 5:
-            self.ballX = self.width / 2 + 10
-            self.ballXSpeed = -0.8 * self.ballXSpeed
-        if (self.width / 2 + 10 >= self.ballX + 2 * self.ballRadius >= self.width / 2 - 10) and \
-                self.ballY + self.ballRadius > self.height * 2 / 5:
-            self.ballX = self.width / 2 - 10 - 2 * self.ballRadius
-            self.ballXSpeed = -0.8 * self.ballXSpeed
-
-        if self.width / 2 - 10 - 2 * self.ballRadius < self.ballX < self.width / 2 + 10 and \
-                self.ballY + 2 * self.ballRadius >= self.height * 2 / 5:
-            self.ballY = self.height * 2 / 5 - 2 * self.ballRadius
-            self.ballYSpeed = - 0.8 * self.ballYSpeed
-
-        self.ballY += self.ballYSpeed
-        self.ballX += self.ballXSpeed
+    def check_points(self):
+        if self.ball.rect.bottom >= self.height - 100:
+            if self.ball.rect.centerx < self.width // 2:
+                self.points[1] += 1
+            else:
+                self.points[0] += 1
+            self.reload()
+            if self.points[0] == 3:
+                self.net.game_won_by(0)
+            if self.points[1] == 3:
+                self.net.game_won_by(1)
 
     def run(self):
+        moving_left = False
+        moving_right = False
+
         while self.net.current_minigame() == 7:
+            moving_up = False
+            self.screen.fill((255, 255, 255))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP and self.playersY[self.player_nmbr] >= self.height - 100 - 2 * \
-                            self.playersRadius[self.player_nmbr]:
-                        self.playersYSpeed[self.player_nmbr] = -12
+                    if event.key == pygame.K_UP:
+                        if self.height - self.player.rect.bottom <= 100:
+                            moving_up = True
                     if event.key == pygame.K_LEFT:
-                        self.playersXSpeed[self.player_nmbr] = -3
+                        moving_left = True
                     if event.key == pygame.K_RIGHT:
-                        self.playersXSpeed[self.player_nmbr] = 3
+                        moving_right = True
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                        self.playersXSpeed[self.player_nmbr] = 0
-
-            self.screen.fill((255, 255, 255))
-            pygame.draw.rect(self.screen, (111, 111, 111), pygame.Rect(0, self.height - 100, self.width, 100), 0)
-            pygame.draw.rect(self.screen, (111, 111, 111), self.ground, 0)
-            pygame.draw.rect(self.screen, (0, 0, 0), self.stick, 0)
+                    if event.key == pygame.K_LEFT:
+                        moving_left = False
+                    if event.key == pygame.K_RIGHT:
+                        moving_right = False
 
             if self.player_nmbr == 0:
-                if (self.playersX[self.player_nmbr] <= self.width / 2 + 10 and self.playersXSpeed[
-                    self.player_nmbr] < 0) or (
-                        self.playersX[self.player_nmbr] + 2 * self.playersRadius[self.player_nmbr] >= self.width and
-                        self.playersXSpeed[self.player_nmbr] > 0):
-                    self.playersXSpeed[self.player_nmbr] = 0
-                self.playersX[self.player_nmbr] += self.playersXSpeed[self.player_nmbr]
+                data = self.net.get_data()
+                self.move_character(self.enemy, data[1][0], data[1][1], data[1][2])
 
-                if self.playersX[self.player_nmbr] >= self.width - 2 * self.playersRadius[self.player_nmbr]:
-                    self.playersX[self.player_nmbr] = self.width - 2 * self.playersRadius[self.player_nmbr]
+                self.move_character(self.player, moving_up, moving_left, moving_right)
+
+                self.player.rect.center = convert_coordinates(self.player.body.position)
+                self.enemy.rect.center = convert_coordinates(self.enemy.body.position)
+                self.ball.rect.center = convert_coordinates(self.ball.body.position)
+
+                self.net.send((7, (self.player.rect.center, self.enemy.rect.center, self.ball.rect.center)))
+
+                self.check_points()
+
             else:
-                if (self.playersX[self.player_nmbr] + 2 * self.playersRadius[
-                    self.player_nmbr] >= self.width / 2 - 10 and self.playersXSpeed[
-                        self.player_nmbr] > 0) or (
-                        self.playersX[self.player_nmbr] <= 0 and self.playersXSpeed[self.player_nmbr] < 0):
-                    self.playersXSpeed[self.player_nmbr] = 0
-                self.playersX[self.player_nmbr] += self.playersXSpeed[self.player_nmbr]
+                data = self.net.get_data()
+                if data is None or data[1] is None:
+                    break
+                self.player.rect.center = data[1][1]
+                self.enemy.rect.center = data[1][0]
+                self.ball.rect.center = data[1][2]
 
-                if self.playersX[self.player_nmbr] <= 0:
-                    self.playersX[self.player_nmbr] = 0
+                self.net.send((7, (moving_up, moving_left, moving_right)))
 
-            self.playersYSpeed[self.player_nmbr] += self.acceleration
-            self.playersY[self.player_nmbr] += self.playersYSpeed[self.player_nmbr]
-            if self.playersY[self.player_nmbr] + 2 * self.playersRadius[self.player_nmbr] >= self.height - 100:
-                self.playersYSpeed[self.player_nmbr] = 0
-                self.playersY[self.player_nmbr] = self.height - 100 - 2 * self.playersRadius[self.player_nmbr]
-
-            if self.player_nmbr == 0:
-                self.check_collision()
-
-            # pygame.display.update()
-            # if self.player_nmbr == 0:
-
-
-            if self.player_nmbr == 0:
-                self.net.send((7, "both", (
-            self.playersX[self.player_nmbr], self.playersY[self.player_nmbr], self.playersXSpeed[self.player_nmbr],
-            self.playersYSpeed[self.player_nmbr]), (self.ballX, self.ballY)))
-            else:
-                self.net.send((7, "player", (
-                    self.playersX[self.player_nmbr], self.playersY[self.player_nmbr],
-                    self.playersXSpeed[self.player_nmbr],
-                    self.playersYSpeed[self.player_nmbr])))
-            # else:
-            #     self.net.send((6, (self.playersX[(self.player_nmbr + 1) % 2], self.playersY[(self.player_nmbr + 1) % 2], self.playersXSpeed[(self.player_nmbr + 1) % 2], self.playersYSpeed[(self.player_nmbr + 1) % 2]),
-            #                    (self.playersX[self.player_nmbr], self.playersY[self.player_nmbr], self.playersXSpeed[self.player_nmbr], self.playersYSpeed[self.player_nmbr]),
-            #                    (self.ballX, self.ballY, self.ballXSpeed, self.ballYSpeed)))
-
-            data = self.net.get_data()
-            if data == None:
-                continue
-            elif data[0] != 7:
-                break
-            else:
-                data = data[1]
-
-            # print(data)
-
-            self.playersX[(self.player_nmbr + 1) % 2] = data[0][0]
-            self.playersY[(self.player_nmbr + 1) % 2] = data[0][1]
-            self.playersXSpeed[(self.player_nmbr + 1) % 2] = data[0][2]
-            self.playersYSpeed[(self.player_nmbr + 1) % 2] = data[0][3]
-
-            if self.player_nmbr == 1:
-                self.ballX = data[1][0]
-                self.ballY = data[1][1]
-
-            self.player(self.playersX[self.player_nmbr], self.playersY[self.player_nmbr])
-            self.enemy(self.playersX[(self.player_nmbr + 1) % 2], self.playersY[(self.player_nmbr + 1) % 2])
-            self.ball(self.ballX, self.ballY)
+            self.items.draw(self.screen)
 
             pygame.display.update()
-
-            if self.ballY + 2 * self.ballRadius >= self.height - 100:
-                if self.ballX < self.width / 2:
-                    self.enemyPoints += 1
-                else:
-                    self.playerPoints += 1
-
-                # time.sleep(1)
-                # self.initialize_player()
-                # self.initialize_enemy()
-                self.initialize_ball()
-                self.initialize_payers()
-                pygame.display.update()
-                # time.sleep(1)
-
-                if self.player_nmbr == 0:
-                    if self.enemyPoints == 3:
-                        # pygame.quit()
-                        self.net.game_won_by((self.player_nmbr + 1) % 2)
-                    if self.playerPoints == 3:
-                        # pygame.quit()
-                        self.net.game_won_by(self.player_nmbr)
-
-            self.clock.tick(100)
+            self.space.step(1 / self.FPS)
+            self.clock.tick(self.FPS)
         return True
-# game = Volleyball(1, 1)
-# game.run()
