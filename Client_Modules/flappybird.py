@@ -81,10 +81,8 @@ class FlappyBird:
 
         if self.player_nmbr == 1:
             data = self.net.get_data()
-            while data is None or data[0] != 4:
-                data = self.net.get_data()
-            data = data[1]
-            if data is not None and data != 0:
+            if data[0]==4 and data[1] != 0:
+                data = data[1]
                 for i in range(len(data[2])):
                     self.walls[i].hole = data[2][i]
 
@@ -112,14 +110,12 @@ class FlappyBird:
                 self.walls[i].update()
 
             data = self.net.get_data()
-            if data is None:
-                break
             if data[0] != 4:
                 break
             else:
                 data = data[1]
 
-            if data is not None and data != 0:
+            if data != 0:
                 if self.player_nmbr == 1:
                     for i in range(len(data[2])):
                         self.walls[i].hole = data[2][i]

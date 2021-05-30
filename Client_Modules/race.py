@@ -194,11 +194,12 @@ class Race:
             self.net.send((8, (self.player.real_position, self.player.score), self.obstacles_data))
 
             data = self.net.get_data()
-            if data is None:
-                return
+            if data[0] != 8:
+                return False
             self.enemy.real_position = data[1][0]
             self.enemy.score = data[1][1]
             self.obstacles_data = data[2]
+            return True
 
     def run(self):
         up_acceleration = False
@@ -209,7 +210,8 @@ class Race:
                 self.screen.blit(self.background, (0, p))
             textsurface = self.font.render("Score: " + str(int(self.player.score)), False, (255, 0, 0))
 
-            self.exchange_data()
+            if not self.exchange_data():
+                break
 
             for i in range(len(self.obstacles_data)):
                 self.obstacles[i].real_position = self.obstacles_data[i][0]

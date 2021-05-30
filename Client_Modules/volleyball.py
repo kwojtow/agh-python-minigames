@@ -192,6 +192,8 @@ class Volleyball:
 
             if self.player_nmbr == 0:
                 data = self.net.get_data()
+                if data[0]!=7:
+                    break
                 self.move_character(self.enemy, data[1][0], data[1][1], data[1][2])
 
                 self.move_character(self.player, moving_up, moving_left, moving_right)
@@ -206,7 +208,7 @@ class Volleyball:
 
             else:
                 data = self.net.get_data()
-                if data is None or data[1] is None:
+                if data[0]!=7 or data[1] is None:
                     break
                 self.player.rect.center = data[1][1]
                 self.enemy.rect.center = data[1][0]

@@ -59,7 +59,11 @@ class Pong:
 			else :
 				self.ball_speed_y=round(8*self.speed_multiplier)
 
-		elif self.ball.top <= 0 or self.ball.bottom >= self.screen_height:
+		elif self.ball.top <= 0:
+			self.ball.top = 0
+			self.ball_speed_y *= -1
+		elif self.ball.bottom >= self.screen_height:
+			self.ball.bottom = self.screen_height
 			self.ball_speed_y *= -1
 
 		if self.ball.left <= 0:
@@ -95,5 +99,5 @@ class Pong:
 				self.update_player()
 			if(self.player_nmbr==0):
 				self.update_ball()
-			self.clock.tick(60)
+			pygame.time.Clock().tick(60)
 		return True

@@ -1,7 +1,6 @@
 import pygame
 import sys
 import pickle
-from time import sleep
 from Client_Modules.networking import Network
 from Client_Modules.pong import Pong
 from Client_Modules.battleships import Battleships
@@ -11,39 +10,45 @@ from Client_Modules.race import Race
 from Client_Modules.snakes import Snakes
 from Client_Modules.bomberman import Bomberman
 from Client_Modules.volleyball import Volleyball
-import socket
+from socket import error as SockError
+from socket import timeout as SockTimeout
+
 def main():
     pygame.init()
     pygame.font.init()
     restart = True
+    net = Network()
+    games = [Pong,Battleships,PaperSoccer,FlappyBird,Snakes,Bomberman,Volleyball,Race]
+    game_names = ["Pong","Battleships","PaperSoccer","FlappyBird","Snakes","Bomberman","Volleyball","Race"]
+    screen = pygame.display.set_mode((1280,960))
+    clock = pygame.time.Clock()
+    font = pygame.font.Font(pygame.font.get_default_font(), 60)
     while restart:
         restart = False
-        net = Network()
-        player_nmbr = int(net.get_player_nmbr())
-        print("You are player number: ", player_nmbr)#For debug
-        screen = pygame.display.set_mode((1280,960))
-        pygame.display.set_caption('Minigames PVP')
-        clock = pygame.time.Clock()
-    
-        screen.fill((100,100,100))
-        font = pygame.font.Font(pygame.font.get_default_font(), 60)
-        text = font.render('Waiting for second player',True, pygame.Color('green'))
-        screen.blit(text,(260,480))
- 
-        pygame.display.flip()
-        score=net.score()
-        games = [Pong,Battleships,PaperSoccer,FlappyBird,Snakes,Bomberman,Volleyball,Race]
-        game_names = ["Pong","Battleships","PaperSoccer","FlappyBird","Snakes","Bomberman","Volleyball","Race"]
         run=True
 
-        current_minigame=net.current_minigame()
+        net.connect();
+        player_nmbr = int(net.get_player_nmbr())
+        print("You are player number: ", player_nmbr)#For debug
+        score=(0,0)
+        current_minigame=-1
+
+        if not player_nmbr:
+            pygame.display.set_caption('Minigames PVP')
+            screen.fill((100,100,100))
+            text = font.render('Waiting for second player',True, pygame.Color('green'))
+            screen.blit(text,(260,480))
+            pygame.display.flip()
+
+            while current_minigame==-1 and run:#LOBBY
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        run=False
+                current_minigame=net.current_minigame()
+                clock.tick(30)
+
+
         pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))
-        while current_minigame==-1 and run:#LOBBY
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run=False
-            current_minigame=net.current_minigame()
-            clock.tick(30)
 
         while run and all(points < 3 for points in score):#Minigames
             current_minigame=net.current_minigame()
@@ -54,21 +59,26 @@ def main():
             text = font.render('Next game is ' + game_names[current_minigame-1],True, pygame.Color('black'))
             screen.blit(text,(280,480))
             pygame.display.flip()
-            sleep(1)
+
+            current_time = pygame.time.get_ticks()
+            while run and current_time+3000>pygame.time.get_ticks():
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        run=False
+
 
             game=games[current_minigame-1](player_nmbr,net)
             try:
                 run=game.run()
                 score=net.score()
-            except socket.timeout:
+            except SockTimeout:
                 print("TIMED OUT !!!")
                 run = False
-            except socket.error as e:
+            except SockError as e:
                 #Second player left
-                print(e)
+                print("Enemy Left")
                 run = False
                 net.close()
-                net = None
             except Exception as e:
                 #Some other error
                 print(e)
@@ -78,7 +88,7 @@ def main():
 
         #Game End
         screen = pygame.display.set_mode((1280,960))
-        if net != None:
+        if net.connected:
             if net.score()[player_nmbr]>=3:
                 screen.fill((0,255,0))
             else:
@@ -104,7 +114,7 @@ def main():
                         restart = True
                         run = False
             clock.tick(30)
-        if net:
+        if net.connected:#We shut connection here and not above to make sure second player gets data before deleting game from server
             net.close()
         if not restart:
             pygame.quit()

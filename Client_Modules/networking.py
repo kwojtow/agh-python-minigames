@@ -6,21 +6,23 @@ from retry import retry
 class Network:
     def __init__(self):
         socket.setdefaulttimeout(0.1)
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
         self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
-        self.server='192.168.100.99'
+        #self.server='192.168.100.99'
         self.port = 1234
         self.addr = (self.server, self.port)
-        self.player_nmbr = self.connect()
+        self.player_nmbr = None
+        self.connected = False
 
     def get_player_nmbr(self):
         return self.player_nmbr
 
     def connect(self):
         try:
+            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
             self.client.connect(self.addr)
-            return self.client.recv(2048).decode()
+            self.player_nmbr = self.client.recv(2048).decode()
+            self.connected = True
         except:
             print("Connection failed\n")
             raise
@@ -28,6 +30,7 @@ class Network:
     def close(self):
         try:
             self.client.close()
+            self.connected = False
         except:
             print("Close failed")
             raise
@@ -49,14 +52,16 @@ class Network:
 
     @retry(tries=10)
     def send_recv(self, data):
+        self.client.sendall(pickle.dumps(data))
         try:
-            self.client.sendall(pickle.dumps(data))
             data=self.client.recv(2048)
             data = pickle.loads(data)#Temporary
             print(data)
+            if not isinstance(data, (list, tuple)):
+                raise socket.timeout
             return data
         except socket.timeout:
-            print("LAG\n")
+            print("LAG")
             raise
 
     def send(self, data):
