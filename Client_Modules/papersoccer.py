@@ -15,68 +15,55 @@ class PaperSoccer:
         self.moves = [[[False for i in range(10)] for j in range(self.width + 1)] for k in range(self.height + 3)]
         self.keys = [pygame.K_KP1, pygame.K_KP2, pygame.K_KP3, pygame.K_KP4, pygame.K_KP6, pygame.K_KP7, pygame.K_KP8,
                      pygame.K_KP9]
+        self.ball_position = (int(100 * self.width / 2), int(100 * (self.height + 2) / 2))
+
+        self.whose_turn = 0
+        self.color = pygame.Color(255, 0, 0)
+        self.winner = -1
+
+        top = [4, 7, 8, 9, 6]
+        bottom = [4, 1, 2, 3, 6]
+        left = [2, 1, 4, 7, 8]
+        right = [2, 3, 6, 9, 8]
+
+        def change_moves_status(rows, columns, moves, status):
+            for row in rows:
+                for col in columns:
+                    for move in moves:
+                        self.moves[row][col][move] = status
+
+        def exclude_moves(rows, columns, moves):
+            return change_moves_status(rows, columns, moves, True)
+
+        def include_moves(rows, columns, moves):
+            return change_moves_status(rows, columns, moves, False)
 
         for i in range(self.height + 3):
             for j in range(self.width + 1):
                 self.moves[i][j][5] = True
                 self.moves[i][j][0] = True
 
-        for i in range(self.width + 1):
-            for j in range(10):
-                self.moves[0][i][j] = True
-                self.moves[self.height + 2][i][j] = True
+        # borders
+        exclude_moves([0], [i for i in range(self.width + 1)], [i for i in range(10)])
+        exclude_moves([self.height + 2], [i for i in range(self.width + 1)], [i for i in range(10)])
+        exclude_moves([1], [i for i in range(self.width + 1)], top)
+        exclude_moves([self.height + 1], [i for i in range(self.width + 1)], bottom)
 
-            self.moves[1][i][4] = True
-            self.moves[1][i][7] = True
-            self.moves[1][i][8] = True
-            self.moves[1][i][9] = True
-            self.moves[1][i][6] = True
+        # goal lines
+        exclude_moves([i for i in range(self.height + 3)], [0], left)
+        exclude_moves([i for i in range(self.height + 3)], [self.width], right)
 
-            self.moves[self.height + 1][i][4] = True
-            self.moves[self.height + 1][i][1] = True
-            self.moves[self.height + 1][i][2] = True
-            self.moves[self.height + 1][i][3] = True
-            self.moves[self.height + 1][i][6] = True
+        # top goal
+        include_moves([1], [int(self.width / 2 - 1)], [9, 6])
+        include_moves([1], [int(self.width / 2)], top)
+        include_moves([1], [int(self.width / 2 + 1)], [4, 7])
 
-        for i in range(self.height + 3):
-            self.moves[i][0][7] = True
-            self.moves[i][0][4] = True
-            self.moves[i][0][1] = True
-            self.moves[i][0][8] = True
-            self.moves[i][0][2] = True
-            self.moves[i][self.width][9] = True
-            self.moves[i][self.width][6] = True
-            self.moves[i][self.width][3] = True
-            self.moves[i][self.width][8] = True
-            self.moves[i][self.width][2] = True
-
-        self.moves[1][int(self.width / 2 - 1)][9] = False
-        self.moves[1][int(self.width / 2 - 1)][6] = False
-        self.moves[1][int(self.width / 2)][4] = False
-        self.moves[1][int(self.width / 2)][7] = False
-        self.moves[1][int(self.width / 2)][8] = False
-        self.moves[1][int(self.width / 2)][9] = False
-        self.moves[1][int(self.width / 2)][6] = False
-        self.moves[1][int(self.width / 2 + 1)][4] = False
-        self.moves[1][int(self.width / 2 + 1)][7] = False
-
-        self.moves[self.height + 1][int(self.width / 2 - 1)][3] = False
-        self.moves[self.height + 1][int(self.width / 2 - 1)][6] = False
-        self.moves[self.height + 1][int(self.width / 2)][4] = False
-        self.moves[self.height + 1][int(self.width / 2)][1] = False
-        self.moves[self.height + 1][int(self.width / 2)][2] = False
-        self.moves[self.height + 1][int(self.width / 2)][3] = False
-        self.moves[self.height + 1][int(self.width / 2)][6] = False
-        self.moves[self.height + 1][int(self.width / 2 + 1)][4] = False
-        self.moves[self.height + 1][int(self.width / 2 + 1)][1] = False
-
-        self.ball_position = (int(100 * self.width / 2), int(100 * (self.height + 2) / 2))
+        # bottom goal
+        include_moves([self.height + 1], [int(self.width / 2 - 1)], [3, 6])
+        include_moves([self.height + 1], [int(self.width / 2)], bottom)
+        include_moves([self.height + 1], [int(self.width / 2 + 1)], [4, 1])
 
         self.screen.fill((255, 255, 255))
-
-        self.whose_turn = 0
-        self.color = pygame.Color(255, 0, 0)
-        self.winner = -1
 
         for i in range(1, self.width):
             pygame.draw.line(self.screen, pygame.Color(222, 222, 222), (100 * i, 0), (100 * i, 100 * (self.height + 2)))
@@ -88,12 +75,13 @@ class PaperSoccer:
         self.right_edge = int(100 * (self.width / 2 + 1))
         self.half_width = int(100 * (self.width / 2 - 1))
 
-        self.background_color = pygame.Color(255 * ((self.player_nmbr + 1) % 2), 0, 255 * self.player_nmbr)
+        self.background_color1 = pygame.Color(255 * ((self.player_nmbr + 1) % 2), 0, 255 * self.player_nmbr)
+        self.background_color2 = pygame.Color(255 * self.player_nmbr, 0, 255 * ((self.player_nmbr + 1) % 2))
 
-        pygame.draw.rect(self.screen, self.background_color, (0, 0, self.half_width, 100))
-        pygame.draw.rect(self.screen, self.background_color, (self.right_edge, 0, self.half_width, 100))
-        pygame.draw.rect(self.screen, self.background_color, (0, 100 * (self.height + 1), self.half_width, 100))
-        pygame.draw.rect(self.screen, self.background_color,
+        pygame.draw.rect(self.screen, self.background_color2, (0, 0, self.half_width, 100))
+        pygame.draw.rect(self.screen, self.background_color2, (self.right_edge, 0, self.half_width, 100))
+        pygame.draw.rect(self.screen, self.background_color1, (0, 100 * (self.height + 1), self.half_width, 100))
+        pygame.draw.rect(self.screen, self.background_color1,
                          (int(100 * (self.width / 2 + 1)), 100 * (self.height + 1), self.half_width, 100))
         pygame.draw.polygon(self.screen, pygame.Color(0, 0, 0),
                             [(self.left_edge, 0), (self.right_edge, 0), (self.right_edge, 100), (100 * self.width, 100),
@@ -164,13 +152,13 @@ class PaperSoccer:
                 if self.whose_turn == self.player_nmbr and event.type == pygame.KEYDOWN:
                     if event.key in self.keys:
                         self.ball_position = self.move_if_possible(self.key_value(event.key), self.ball_position)
-                        self.net.send((3,self.key_value(event.key), self.ball_position))
+                        self.net.send((3, self.key_value(event.key), self.ball_position))
 
             data = self.net.get_data()
-            if(data[0]!=3):
+            if (data[0] != 3):
                 break
             else:
-                data=data[1]
+                data = data[1]
             # print(self.net.get_data())
             if data != None:
                 # self.whose_turn = data[2]
@@ -178,14 +166,13 @@ class PaperSoccer:
                 if data[1] != self.ball_position:
                     self.ball_position = self.move_if_possible(data[0], self.ball_position)
 
-            if not self.can_still_move(self.ball_position) and self.all_occupied(self.ball_position) and not (self.ball_position[1] == 0 or self.ball_position[1] == (100 * (self.height + 2))):
-                print("Winner: ", (self.whose_turn + 1) % 2)
+            if not self.can_still_move(self.ball_position) and self.all_occupied(self.ball_position) and not (
+                    self.ball_position[1] == 0 or self.ball_position[1] == (100 * (self.height + 2))):
                 self.winner = (self.whose_turn + 1) % 2
-            elif self.ball_position[1] == 0 or self.ball_position[1] == (100 * (self.height + 2)):
-                print("Winner: ", self.whose_turn)
-                self.winner = self.whose_turn
-
-
+            elif self.ball_position[1] == 0:
+                self.winner = 0
+            elif self.ball_position[1] == (100 * (self.height + 2)):
+                self.winner = 1
 
             pygame.draw.circle(self.screen, self.color, self.ball_position, 5)
 

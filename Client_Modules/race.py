@@ -89,6 +89,10 @@ class Race:
                                             (0, -random.randint(1, 5))))
         self.exchange_data()
 
+        if self.player_nmbr == 1:
+            while len(self.obstacles_data) == 0:
+                self.exchange_data()
+
         for obstacle_data in self.obstacles_data:
             self.obstacles.append(Car(obstacle_data[0], self.images[2], obstacle_data[1]))
 
@@ -174,8 +178,7 @@ class Race:
             obstacle.rect.y = obstacle.real_position[1] + offset
 
     def update_scores(self):
-        self.player.score = abs(
-            self.player.real_position[1] - self.player.initial_position_y) - 100 * self.player.collisions
+        self.player.score = -(self.player.real_position[1] - self.player.initial_position_y) - 100 * self.player.collisions
 
     def check_if_win(self):
         if self.player.score >= 10000:
@@ -184,16 +187,17 @@ class Race:
             self.net.game_won_by(1)
 
     def exchange_data(self):
-        self.net.send((8, (self.player.real_position, self.player.score), self.obstacles_data))
-        if self.player_nmbr == 0:
-            for i in range(len(self.obstacles)):
-                self.obstacles_data[i] = (self.obstacles[i].real_position, self.obstacles[i].speed)
+        if self.net.current_minigame() == 8:
+            if self.player_nmbr == 0:
+                for i in range(len(self.obstacles)):
+                    self.obstacles_data[i] = (self.obstacles[i].real_position, self.obstacles[i].speed)
+            self.net.send((8, (self.player.real_position, self.player.score), self.obstacles_data))
 
-        data = self.net.get_data()
-        self.enemy.real_position = data[1][0]
-        self.enemy.score = data[1][1]
-
-        if self.player_nmbr == 1:
+            data = self.net.get_data()
+            if data is None:
+                return
+            self.enemy.real_position = data[1][0]
+            self.enemy.score = data[1][1]
             self.obstacles_data = data[2]
 
     def run(self):
