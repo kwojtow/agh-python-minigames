@@ -56,7 +56,7 @@ class Network:
         try:
             data=self.client.recv(2048)
             data = pickle.loads(data)#Temporary
-            print(data)
+            #print(data)
             if not isinstance(data, (list, tuple)):
                 raise socket.timeout
             return data
