@@ -70,8 +70,8 @@ class Ground(pygame.sprite.Sprite):
 
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.shape = pymunk.Segment(self.body, (0, 0), (parent_width, 0), self.rect.height)
-        self.shape.elasticity = 0.8
-        self.shape.friction = 100000
+        self.shape.elasticity = 0
+        # self.shape.friction = 3500000000
 
 
 class Volleyball:
@@ -150,9 +150,14 @@ class Volleyball:
         if moving_up:
             character.body.apply_force_at_local_point((0, 3500000000), (0, 0))
         if moving_left:
-            character.body.apply_force_at_local_point((-10000000, 0), (0, 0))
+            character.body.apply_force_at_local_point((-20000000, 0), (0, 0))
+            # character.body.velocity = (-200, character.body.velocity[1])
         if moving_right:
-            character.body.apply_force_at_local_point((10000000, 0), (0, 0))
+            character.body.apply_force_at_local_point((20000000, 0), (0, 0))
+            # character.body.velocity = (200, character.body.velocity[1])
+        if not moving_left and not moving_right:
+            character.body.velocity = (0.9 * character.body.velocity[0], character.body.velocity[1])
+            # print(character.body.velocity)
 
     def check_points(self):
         if self.ball.rect.bottom >= self.height - 100:
@@ -182,6 +187,7 @@ class Volleyball:
                             moving_up = True
                     if event.key == pygame.K_LEFT:
                         moving_left = True
+                        # self.player.body.velocity = (10, 0)
                     if event.key == pygame.K_RIGHT:
                         moving_right = True
                 if event.type == pygame.KEYUP:
@@ -193,7 +199,6 @@ class Volleyball:
             if self.player_nmbr == 0:
                 data = self.net.get_data()
                 self.move_character(self.enemy, data[1][0], data[1][1], data[1][2])
-
                 self.move_character(self.player, moving_up, moving_left, moving_right)
 
                 self.player.rect.center = convert_coordinates(self.player.body.position)
