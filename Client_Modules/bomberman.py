@@ -127,7 +127,7 @@ class Bomberman:
 
 			self.net.send((6,self.player.position,self.player.bombs))
 			data=self.net.get_data()
-			if data!=None and data[0]==6:#Find out why Nonetype is returned
+			if data[0]==6:
 				data=data[1]
 				self.enemy.position=data[0]
 				for bomb in data[1]:

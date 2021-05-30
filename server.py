@@ -12,7 +12,7 @@ def threaded_client(conn, player_nmbr, gameid):
     conn.send(str(player_nmbr).encode())
     while True:
         try:
-            data=conn.recv(1024)
+            data=conn.recv(2048)
             if not data: 
                 break
             data = pickle.loads(data)#New data from player
@@ -53,6 +53,7 @@ def main():
 
     while True:
         conn, addr = s.accept()
+        conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
         print("Connected to:", addr)
         idCount += 1
         gameid = (idCount - 1)//2

@@ -17,9 +17,9 @@ class Server_game:
         self.game=None
         self.games = [Server_pong,Server_battleships,Server_papersoccer,Server_flappybird,Server_snakes,Server_bomberman,Server_volleyball,Server_race]
     def newgame(self):
-        newgame_id=8
+        newgame_id=randint(1,8)
         while newgame_id==self.gameinfo[0]:
-            newgame_id=7
+            newgame_id=randint(1,8)
 
         self.gameinfo[0]=newgame_id
         self.game = self.games[newgame_id-1]()
@@ -30,7 +30,7 @@ class Server_game:
         #Diffrent data handling
         if data=="gameinfo":#Returns to user id of current minigame and scores
             conn.sendall(pickle.dumps(self.gameinfo))
-        elif data=="p0w":#Who won, may change in the future 
+        elif data=="p0w":#Who won
             self.gameinfo[1]+=1
             self.newgame()
         elif data=="p1w":

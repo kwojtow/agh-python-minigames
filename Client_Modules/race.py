@@ -184,20 +184,17 @@ class Race:
             self.net.game_won_by(1)
 
     def exchange_data(self):
-        if self.net.current_minigame() == 8:
-            self.net.send((8, (self.player.real_position, self.player.score), self.obstacles_data))
-            if self.player_nmbr == 0:
-                for i in range(len(self.obstacles)):
-                    self.obstacles_data[i] = (self.obstacles[i].real_position, self.obstacles[i].speed)
+        self.net.send((8, (self.player.real_position, self.player.score), self.obstacles_data))
+        if self.player_nmbr == 0:
+            for i in range(len(self.obstacles)):
+                self.obstacles_data[i] = (self.obstacles[i].real_position, self.obstacles[i].speed)
 
-            data = self.net.get_data()
-            while (type(data) == list and len(data[2]) == 0):
-                data = self.net.get_data()
-            self.enemy.real_position = data[1][0]
-            self.enemy.score = data[1][1]
+        data = self.net.get_data()
+        self.enemy.real_position = data[1][0]
+        self.enemy.score = data[1][1]
 
-            if self.player_nmbr == 1:
-                self.obstacles_data = data[2]
+        if self.player_nmbr == 1:
+            self.obstacles_data = data[2]
 
     def run(self):
         up_acceleration = False

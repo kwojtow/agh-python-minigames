@@ -13,7 +13,6 @@ class Pong:
 		self.screen = pygame.display.set_mode((1280,960))
 		self.speed=0
 		self.player,self.enemy=self.initialize_players()
-		self.clock = pygame.time.Clock()#<-------------------------???
 		self.ball = pygame.Rect(self.screen_width / 2 , self.screen_height / 2 , 20, 20)
 		self.ball_speed_x=10
 		self.ball_speed_y=0
@@ -52,7 +51,7 @@ class Pong:
 		self.ball.x += self.ball_speed_x
 		self.ball.y += self.ball_speed_y
 
-		if self.ball.colliderect(self.player) or self.ball.colliderect(self.enemy):#Might add ball_speed_y=0 when hit near center
+		if self.ball.colliderect(self.player) or self.ball.colliderect(self.enemy):
 			self.ball_speed_x *= -1
 			self.speed_multiplier+=0.1
 			if self.ball.y<=self.player.y:
@@ -68,7 +67,6 @@ class Pong:
 		elif self.ball.right >= self.screen_width:
 			self.net.game_won_by(0)
 			
-
 	def draw(self):
 		self.screen.fill((110,110,110))
 		pygame.draw.rect(self.screen, (0,0,0), self.player)

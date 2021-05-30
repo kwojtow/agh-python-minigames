@@ -8,8 +8,8 @@ class Network:
         socket.setdefaulttimeout(0.1)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
-        #self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
-        self.server='89.228.177.239'
+        self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
+        self.server='192.168.100.99'
         self.port = 1234
         self.addr = (self.server, self.port)
         self.player_nmbr = self.connect()
@@ -20,9 +20,9 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.addr)
-            return self.client.recv(1024).decode()
+            return self.client.recv(2048).decode()
         except:
-            print("Connection failed")
+            print("Connection failed\n")
             raise
 
     def close(self):
@@ -47,11 +47,17 @@ class Network:
         elif player_nmbr==1:
             self.send("p1w")
 
-    @retry(tries=6)
+    @retry(tries=10)
     def send_recv(self, data):
-        self.client.send(pickle.dumps(data))
-        data=self.client.recv(1024)
-        return pickle.loads(data)
+        try:
+            self.client.sendall(pickle.dumps(data))
+            data=self.client.recv(2048)
+            data = pickle.loads(data)#Temporary
+            print(data)
+            return data
+        except socket.timeout:
+            print("LAG\n")
+            raise
 
     def send(self, data):
-        self.client.send(pickle.dumps(data))
+        self.client.sendall(pickle.dumps(data))

@@ -11,8 +11,7 @@ from Client_Modules.race import Race
 from Client_Modules.snakes import Snakes
 from Client_Modules.bomberman import Bomberman
 from Client_Modules.volleyball import Volleyball
-
-
+import socket
 def main():
     pygame.init()
     pygame.font.init()
@@ -61,11 +60,20 @@ def main():
             try:
                 run=game.run()
                 score=net.score()
-            except Exception as e:
+            except socket.timeout:
+                print("TIMED OUT !!!")
+                run = False
+            except socket.error as e:
                 #Second player left
-                run=False
+                print(e)
+                run = False
                 net.close()
                 net = None
+            except Exception as e:
+                #Some other error
+                print(e)
+                run = False
+
             pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr+1)%2]))
 
         #Game End

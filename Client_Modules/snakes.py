@@ -104,7 +104,7 @@ class Snakes:
 			else:
 				self.enemy_body,self.enemy_head,self.player.apple=data[1][0],data[1][1],data[2]
 
-			if(tuple(self.player.head) in self.enemy_body):
+			if(tuple(self.player.head) in self.enemy_body+self.player.body[:-1]):
 				self.net.game_won_by((self.player_nmbr+1)%2)
 			self.draw()
 			pygame.time.Clock().tick(5)
