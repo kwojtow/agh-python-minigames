@@ -8,26 +8,25 @@ idCount = 0
 
 def threaded_client(conn, player_nmbr, gameid):
     global idCount
-
     conn.send(str(player_nmbr).encode())
+
     while True:
         try:
-            data=conn.recv(2048)
+            data = conn.recv(2048)
             if not data: 
                 break
             data = pickle.loads(data)#New data from player
             if gameid in games:#In case if one player left and deleted game
-                games[gameid].receive(data,conn,player_nmbr)
+                games[gameid].receive(data, conn, player_nmbr)
             else:
                 break
         except Exception as e:
-            print(e)
             break
 
     try:#Clean memory
         if gameid in games:
-            if games[gameid].gameinfo[0]==-1:#Player left before second joined
-                idCount-=1
+            if games[gameid].gameinfo[0] == -1:#Player left before second joined
+                idCount -= 1
             del games[gameid]
             print("Closing Game", gameid)
     except Exception as e:
@@ -41,22 +40,22 @@ def main():
     server = socket.gethostbyname(socket.gethostname())
     port = 1234
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
     try:
-        s.bind((server, port))
+        sock.bind((server, port))
     except socket.error as e:
         str(e)
-    s.listen()
+    sock.listen()
     print("Server Started")
     ###
 
     while True:
-        conn, addr = s.accept()
+        conn, addr = sock.accept()
         conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
         print("Connected to:", addr)
         idCount += 1
-        gameid = (idCount - 1)//2
+        gameid = (idCount - 1) // 2
         if idCount % 2 == 1:
             games[gameid] = Server_game()
             print("New game created")

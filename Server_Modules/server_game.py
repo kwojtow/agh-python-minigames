@@ -13,27 +13,28 @@ from Server_Modules.server_volleyball import Server_volleyball
 
 class Server_game:
     def __init__(self):
-        self.gameinfo=[-1,0,0]
-        self.game=None
-        self.games = [Server_pong,Server_battleships,Server_papersoccer,Server_flappybird,Server_snakes,Server_bomberman,Server_volleyball,Server_race]
+        self.gameinfo = [-1, 0, 0]
+        self.game = None
+        self.games = [Server_pong, Server_battleships, Server_papersoccer, Server_flappybird,
+                     Server_snakes, Server_bomberman, Server_volleyball, Server_race]
     def newgame(self):
-        newgame_id=7
-        while newgame_id==self.gameinfo[0]:
-            newgame_id=8
+        newgame_id = 5
+        while newgame_id == self.gameinfo[0]:
+            newgame_id = 6
 
-        self.gameinfo[0]=newgame_id
+        self.gameinfo[0] = newgame_id
         self.game = self.games[newgame_id-1]()
 
     def receive(self,data,conn,player_nmbr):
-        if self.gameinfo[0]==0:# second player joined, select random minigame
+        if self.gameinfo[0] == 0:# second player joined, select random minigame
             self.newgame()
         #Diffrent data handling
-        if data=="gameinfo":#Returns to user id of current minigame and scores
+        if data == "gameinfo":#Returns to user id of current minigame and scores
             conn.sendall(pickle.dumps(self.gameinfo))
-        elif data=="p0w":#Who won
+        elif data == "p0w":#Who won
             self.gameinfo[1]+=1
             self.newgame()
-        elif data=="p1w":
+        elif data == "p1w":
             self.gameinfo[2]+=1
             self.newgame()
         else:

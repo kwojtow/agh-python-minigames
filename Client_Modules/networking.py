@@ -4,10 +4,10 @@ import sys
 from retry import retry
 
 class Network:
+
     def __init__(self):
         socket.setdefaulttimeout(0.1)
-        self.server = socket.gethostbyname(socket.gethostname())#FOR DEBUG ONLY<--------------------
-        #self.server='192.168.100.99'
+        self.server = socket.gethostbyname(socket.gethostname())#Current PC
         self.port = 1234
         self.addr = (self.server, self.port)
         self.player_nmbr = None
@@ -45,23 +45,21 @@ class Network:
         return self.send_recv("get")
 
     def game_won_by(self,player_nmbr):
-        if player_nmbr==0:
+        if player_nmbr == 0:
             self.send("p0w")
-        elif player_nmbr==1:
+        elif player_nmbr == 1:
             self.send("p1w")
 
-    @retry(tries=10)
+    @retry(tries=10,logger=None)
     def send_recv(self, data):
         self.client.sendall(pickle.dumps(data))
         try:
-            data=self.client.recv(2048)
-            data = pickle.loads(data)#Temporary
-            #print(data)
+            data = self.client.recv(2048)
+            data = pickle.loads(data)
             if not isinstance(data, (list, tuple)):
                 raise socket.timeout
             return data
         except socket.timeout:
-            print("LAG")
             raise
 
     def send(self, data):
