@@ -10,13 +10,14 @@ def threaded_client(conn, player_nmbr, gameid):
     global idCount
     conn.send(str(player_nmbr).encode())
 
+    #Data recv loop
     while True:
         try:
             data = conn.recv(2048)
             if not data: 
                 break
             data = pickle.loads(data)#New data from player
-            if gameid in games:#In case if one player left and deleted game
+            if gameid in games:#In case if one player left and deleted the game
                 games[gameid].receive(data, conn, player_nmbr)
             else:
                 break

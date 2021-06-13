@@ -23,7 +23,7 @@ class Bomb:
 		self.timer = 60
 
 	def __eq__(self, other):
-		return self.position == other #Compare with list
+		return self.position == other
 
 	def explode(self):
 		self.timer -= 1
@@ -36,8 +36,8 @@ class Bomberman:
 	def __init__(self,player_nmbr,network):
 		self.player_nmbr = player_nmbr
 		self.net = network
-		self.player = Player(player_nmbr,network)
-		self.enemy = Player(player_nmbr % 2,network)
+		self.player = Player(player_nmbr, network)
+		self.enemy = Player(player_nmbr % 2, network)
 		self.blocks = []
 		self.timer = 0
 		self.lost = False
@@ -46,6 +46,7 @@ class Bomberman:
 			for y in range(2 * block_size, screen_height -2 * block_size, 2 * block_size):
 				self.blocks.append([x, y])
 
+	#Draw explosion and check if lost
 	def explosion(self,position):
 		pygame.draw.rect(self.screen, (255, 165, 0), [position[0], position[1], block_size, block_size])
 		destroyed_cells = []
@@ -86,6 +87,7 @@ class Bomberman:
 
 	def draw(self):
 		self.screen.fill((110, 110, 110))
+		#Walls
 		for block in self.blocks:
 			pygame.draw.rect(self.screen, (101, 67, 33), [block[0], block[1], block_size, block_size])
 
@@ -93,10 +95,10 @@ class Bomberman:
 		pygame.draw.rect(self.screen, (101, 67, 33), [0, 0, block_size, screen_height])
 		pygame.draw.rect(self.screen, (101, 67, 33), [screen_width - block_size, 0, block_size, screen_height])
 		pygame.draw.rect(self.screen, (101, 67, 33), [0, screen_height - block_size, screen_width, block_size])
-
+		#Player/Enemy
 		pygame.draw.rect(self.screen, (0, 255, 0), [self.player.position[0],self.player.position[1], block_size, block_size])
 		pygame.draw.rect(self.screen, (148, 0, 211), [self.enemy.position[0],self.enemy.position[1], block_size, block_size])
-
+		#Bombs
 		for bomb in self.player.bombs:
 			pygame.draw.rect(self.screen, (255, 0, 0), [bomb.position[0], bomb.position[1], block_size, block_size])
 		for bomb in self.enemy.bombs:
@@ -139,15 +141,19 @@ class Bomberman:
 					else:
 						self.player.moved=True
 
-			self.net.send((6, self.player.position, self.player.bombs))
+			#Send/get data
+			self.net.send((minigameID, self.player.position, self.player.bombs))
 			data = self.net.get_data()
 			if data[0] == minigameID:
 				data = data[1]
 				self.enemy.position = data[0]
+				#If there is new bomb, add to list
 				for bomb in data[1]:
 					if bomb not in self.enemy.bombs:
 						self.enemy.bombs.append(bomb)
+
 			self.draw()
+			#Bombs tick logic
 			for bomb in list(self.player.bombs):
 				if bomb.explode():
 					self.explosion(bomb.position)
@@ -158,7 +164,7 @@ class Bomberman:
 					self.explosion(bomb.position)
 					self.enemy.bombs.remove(bomb)
 
-
+			#Add more avaible bombs after some time
 			self.timer += 1
 			if(self.timer % 90 == 0):
 				self.player.free_bombs += 1

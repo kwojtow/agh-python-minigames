@@ -8,6 +8,7 @@ class CellType(Enum):
     SHIP = (0, 255, 0)
     MISS = (100, 100, 100)
     DESTROYED = (255, 0, 0)
+
 class Orientation(Enum):
     HORIZONTAL = 0
     VERTICAL = 1
@@ -68,6 +69,8 @@ class Board:
             self.remove(x,y)
         else:
             self.place(x,y)
+
+    #Only for first move
     def shoot_player_cell(self,x,y):
         if self.board_cells[x][y][0] == CellType.WATER:
             self.board_cells[x][y][0] = CellType.MISS
@@ -129,13 +132,14 @@ class Battleships:
         self.net = network
         self.player_score = 0
 
+    #Send boolean list of player's board
     def board_data_send(self):
-        data=[[False for p in range(10)] for _ in range(10)]
+        data = [[False for p in range(10)] for _ in range(10)]
         for i in range(10):
             for j in range(10):
                 if self.player_board.board_cells[i][j][0] == CellType.SHIP:
                     data[i][j] = True
-        self.net.send((2, "matrix", data))
+        self.net.send((minigameID, "matrix", data))
 
     def update_text(self):
         if len(self.player_board.free_ships) > 0:
@@ -159,7 +163,7 @@ class Battleships:
                     return False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = pygame.mouse.get_pos()
-
+                    #Player board
                     if(y > self.display.screen_height / 2):
                         y -= 10 * (self.display.cell_size + self.display.margin) + self.display.divider
                         x = x // (self.display.cell_size + self.display.margin)
@@ -167,6 +171,7 @@ class Battleships:
                         if x in range(10) and y in range(10) and not self.player_board_ready:
                             self.player_board.clicked_tile(x,y)
                             self.update_text()
+                    #Enemy board
                     else:
                         x = x // (self.display.cell_size + self.display.margin)
                         y = y// (self.display.cell_size + self.display.margin)
@@ -174,14 +179,14 @@ class Battleships:
                             if self.player_move and self.enemy_board.board_cells[x][y][0] == CellType.WATER:
                                 self.player_move = False
                                 self.update_text()
-                                data = self.net.send_recv((2, "shot", (x,y)))
+                                data = self.net.send_recv((minigameID, "shot", (x,y)))
                                 if data[0]:
                                     data = data[1]
                                     self.player_score += data
                                     self.enemy_board.shoot_enemy_cell(x, y, data)
+                                    #If all ships were destroyed
                                     if self.player_score == 21:
                                         self.net.game_won_by(self.player_nmbr)
-
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         self.player_board.change_orientation()
@@ -193,8 +198,9 @@ class Battleships:
                         self.player_board_ready = True
                         self.update_text()
 
+            #After sending board here players wait for their turn
             if (self.player_board_ready and not self.player_move):
-                data=self.net.get_data()
+                data = self.net.get_data()
                 if data[0] == minigameID and data[1] != None:
                     data = data[1]
                     self.player_move = True

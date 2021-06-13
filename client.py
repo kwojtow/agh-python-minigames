@@ -1,7 +1,6 @@
 import pygame
 import sys
 import pickle
-import argparse
 from Client_Modules.networking import Network
 from Client_Modules.pong import Pong
 from Client_Modules.battleships import Battleships
@@ -32,11 +31,11 @@ def main():
 
         net.connect();
         player_nmbr = int(net.get_player_nmbr())
-        print("You are player number: ", player_nmbr)#For debug
+        print("You are player number: ", player_nmbr)
         score = (0,0)
-        current_minigame=-1
+        current_minigame = -1
 
-        if not player_nmbr:
+        if not player_nmbr:#If its first player enter waiting loop
             pygame.display.set_caption('Minigames PVP')
             screen.fill((100, 100, 100))
             text = font.render('Waiting for second player',True, pygame.Color('green'))
@@ -53,9 +52,9 @@ def main():
 
         pygame.display.set_caption('Minigames PVP Score '+str(score[player_nmbr])+'-'+str(score[(player_nmbr + 1) % 2]))
 
-        while run and all(points < 3 for points in score):#Minigames
+        while run and all(points < 3 for points in score):#Minigames loop
             current_minigame=net.current_minigame()
-
+            #Show 'next minigame' screen
             screen = pygame.display.set_mode((1280, 960))
 
             screen.fill((255, 255, 255))
@@ -69,7 +68,7 @@ def main():
                     if event.type == pygame.QUIT:
                         run = False
 
-
+            #Start minigame
             game = games[current_minigame - 1](player_nmbr,net)
             try:
                 run = game.run()
@@ -108,6 +107,7 @@ def main():
             run = True
 
         pygame.display.flip()
+        #End game loop
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

@@ -18,20 +18,22 @@ class Pong:
 		self.ball_speed_x = 10
 		self.ball_speed_y = 0
 
+	#Initialize players (rect) and return in correct order
 	def initialize_players(self):
+		player0 = pygame.Rect(5, (self.screen_height - self.players_height)/ 2, self.players_width, self.players_height)
+		player1 = pygame.Rect(self.screen_width - self.players_width - 5,
+							 (self.screen_height - self.players_height) / 2, self.players_width, self.players_height)
 		if(self.player_nmbr == 0):
-			return (pygame.Rect(5, (self.screen_height - self.players_height)/ 2, self.players_width, self.players_height),
-					pygame.Rect(self.screen_width - self.players_width - 5,
-					(self.screen_height - self.players_height) / 2, self.players_width, self.players_height))
+			return player0, player1
 		else:
-			return (pygame.Rect(self.screen_width - self.players_width - 5,
-					(self.screen_height - self.players_height) / 2, self.players_width, self.players_height),
-					pygame.Rect(5, (self.screen_height - self.players_height)/ 2, self.players_width, self.players_height))
+			return player1, player0
 
+	#Get data from server and update location
 	def update_enemy(self):
 		data = self.net.get_data()
 		if(data[0] == self.minigameID):
 			data = data[1]
+			#Player nmbr 1 gets logic data from server
 			if(self.player_nmbr == 0):
 				self.enemy.y = data
 			else:
@@ -39,6 +41,7 @@ class Pong:
 				self.ball.x = data[1]
 				self.ball.y = data[2]
 
+	#Move player and send current data to server
 	def update_player(self):
 		self.player.y += self.speed
 		if (self.player.bottom > self.screen_height):
@@ -46,9 +49,9 @@ class Pong:
 		elif (self.player.top <= 0):
 			self.player.top = 1
 		if(self.player_nmbr == 0):
-			self.net.send((1, (self.player.y,self.ball.x,self.ball.y)))
+			self.net.send((self.minigameID, (self.player.y,self.ball.x,self.ball.y)))
 		else:
-			self.net.send((1, self.player.y))
+			self.net.send((self.minigameID, self.player.y))
 
 	def update_ball(self):
 		self.ball.x += self.ball_speed_x
@@ -98,8 +101,7 @@ class Pong:
 						self.speed = round(8 * self.speed_multiplier)
 			self.draw()
 			self.update_enemy()
-			if(self.speed or not self.player_nmbr):#Not necessary, just to ease server bandwith from player_nmbr 1
-				self.update_player()
+			self.update_player()
 			if(self.player_nmbr == 0):
 				self.update_ball()
 			pygame.time.Clock().tick(60)

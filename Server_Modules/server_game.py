@@ -18,9 +18,9 @@ class Server_game:
         self.games = [Server_pong, Server_battleships, Server_papersoccer, Server_flappybird,
                      Server_snakes, Server_bomberman, Server_volleyball, Server_race]
     def newgame(self):
-        newgame_id = 5
+        newgame_id = 5#randint(1,len(games))
         while newgame_id == self.gameinfo[0]:
-            newgame_id = 6
+            newgame_id = 6#randint(1,len(games))
 
         self.gameinfo[0] = newgame_id
         self.game = self.games[newgame_id-1]()
@@ -37,5 +37,5 @@ class Server_game:
         elif data == "p1w":
             self.gameinfo[2]+=1
             self.newgame()
-        else:
+        else:#Otherwise game specific handling
             self.game.receive(data,conn,player_nmbr)
