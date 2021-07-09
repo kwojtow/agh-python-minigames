@@ -46,7 +46,7 @@ def main():
     try:
         sock.bind((server, port))
     except socket.error as e:
-        str(e)
+        print(e)
     sock.listen()
     print("Server Started")
     ###
